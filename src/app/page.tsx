@@ -21,7 +21,7 @@ export default function Home() {
       const data = await generateWeeklyMenu(includeGroceryList);
       setMenuData(data);
     } catch (err) {
-      setError('Failed to generate menu. Please try again later.');
+      setError('Échec de la génération du menu. Veuillez réessayer plus tard.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -33,7 +33,7 @@ export default function Home() {
       <section className="mb-12 text-center">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4 text-[var(--primary)]">OnMangeQuoi</h1>
-          <p className="text-xl mb-6">Generate your weekly menu and grocery list with ease</p>
+          <p className="text-xl mb-6">Générez votre menu hebdomadaire et liste de courses facilement</p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
             <div className="flex items-center justify-center">
@@ -44,7 +44,7 @@ export default function Home() {
                 onChange={(e) => setIncludeGroceryList(e.target.checked)}
                 className="mr-2"
               />
-              <label htmlFor="includeGroceryList">Include grocery list</label>
+              <label htmlFor="includeGroceryList">Inclure la liste de courses</label>
             </div>
             
             <button
@@ -55,10 +55,10 @@ export default function Home() {
               {loading ? (
                 <span className="flex items-center justify-center">
                   <LoadingSpinner size="small" />
-                  <span className="ml-2">Generating...</span>
+                  <span className="ml-2">Génération en cours...</span>
                 </span>
               ) : (
-                'Generate Weekly Menu'
+                'Générer Menu Hebdomadaire'
               )}
             </button>
           </div>
@@ -76,8 +76,8 @@ export default function Home() {
         
         {!menuData && !loading && (
           <div className="card p-8 text-center">
-            <p className="text-lg mb-4">Welcome to OnMangeQuoi!</p>
-            <p>Click the button above to generate your weekly menu.</p>
+            <p className="text-lg mb-4">Bienvenue sur OnMangeQuoi !</p>
+            <p>Cliquez sur le bouton ci-dessus pour générer votre menu hebdomadaire.</p>
           </div>
         )}
       </section>
@@ -85,13 +85,13 @@ export default function Home() {
       {menuData && (
         <div className="space-y-8">
           <section>
-            <h2 className="text-2xl font-semibold mb-6 text-center">Your Weekly Menu</h2>
+            <h2 className="text-2xl font-semibold mb-6 text-center">Votre Menu Hebdomadaire</h2>
             <WeeklyMenu menu={menuData.menu} />
           </section>
           
           {menuData.grocery_list && (
             <section>
-              <h2 className="text-2xl font-semibold mb-6 text-center">Grocery List</h2>
+              <h2 className="text-2xl font-semibold mb-6 text-center">Liste de Courses</h2>
               <GroceryList ingredients={menuData.grocery_list} />
             </section>
           )}

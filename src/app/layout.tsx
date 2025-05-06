@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OnMangeQuoi - Weekly Menu Generator",
-  description: "Generate your weekly menu and grocery list with ease",
+  title: "OnMangeQuoi - Générateur de Menu Hebdomadaire",
+  description: "Générez votre menu hebdomadaire et liste de courses facilement",
   icons: {
     icon: '/favicon.ico',
   },
@@ -32,17 +32,17 @@ function Header() {
           <ul className="flex space-x-6">
             <li>
               <Link href="/" className="hover:text-[var(--primary)] transition-colors">
-                Home
+                Accueil
               </Link>
             </li>
             <li>
               <Link href="/recipes" className="hover:text-[var(--primary)] transition-colors">
-                Recipes
+                Recettes
               </Link>
             </li>
             <li>
               <Link href="/add-recipe" className="hover:text-[var(--primary)] transition-colors">
-                Add Recipe
+                Ajouter une Recette
               </Link>
             </li>
           </ul>
@@ -57,7 +57,7 @@ function Footer() {
     <footer className="bg-[var(--card)] border-t border-[var(--border)] py-6 mt-12">
       <div className="container mx-auto px-4 text-center">
         <p className="text-sm text-[var(--foreground)] opacity-70">
-          &copy; {new Date().getFullYear()} OnMangeQuoi - Weekly Menu Generator
+          &copy; {new Date().getFullYear()} OnMangeQuoi - Générateur de Menu Hebdomadaire
         </p>
       </div>
     </footer>
@@ -70,7 +70,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >

@@ -36,12 +36,12 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onSubmit }) => {
     
     // Validate form
     if (!name.trim()) {
-      alert('Please enter a recipe name');
+      alert('Veuillez entrer un nom de recette');
       return;
     }
     
     if (ingredients.length === 0) {
-      alert('Please add at least one ingredient');
+      alert('Veuillez ajouter au moins un ingrédient');
       return;
     }
     
@@ -51,7 +51,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onSubmit }) => {
     );
     
     if (invalidIngredient) {
-      alert('Please fill in all ingredient fields with valid values');
+      alert('Veuillez remplir tous les champs d\'ingrédients avec des valeurs valides');
       return;
     }
     
@@ -75,7 +75,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onSubmit }) => {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label htmlFor="name" className="block text-sm font-medium mb-1">
-          Recipe Name
+          Nom de la recette
         </label>
         <input
           type="text"
@@ -89,7 +89,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onSubmit }) => {
       
       <div>
         <label htmlFor="mealType" className="block text-sm font-medium mb-1">
-          Meal Type
+          Type de repas
         </label>
         <select
           id="mealType"
@@ -98,21 +98,21 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onSubmit }) => {
           className="input w-full"
           required
         >
-          <option value="petit déjeuner">Breakfast (Petit déjeuner)</option>
-          <option value="déjeuner">Lunch (Déjeuner)</option>
-          <option value="dîner">Dinner (Dîner)</option>
+          <option value="petit déjeuner">Petit déjeuner</option>
+          <option value="déjeuner">Déjeuner</option>
+          <option value="dîner">Dîner</option>
         </select>
       </div>
       
       <div>
         <div className="flex justify-between items-center mb-2">
-          <label className="block text-sm font-medium">Ingredients</label>
+          <label className="block text-sm font-medium">Ingrédients</label>
           <button
             type="button"
             onClick={handleAddIngredient}
             className="text-sm text-[var(--primary)] hover:text-[var(--primary-hover)]"
           >
-            + Add Ingredient
+            + Ajouter un ingrédient
           </button>
         </div>
         
@@ -122,7 +122,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onSubmit }) => {
               <div className="flex-grow">
                 <input
                   type="text"
-                  placeholder="Ingredient name"
+                  placeholder="Nom de l'ingrédient"
                   value={ingredient.item}
                   onChange={(e) => handleIngredientChange(index, 'item', e.target.value)}
                   className="input w-full"
@@ -135,7 +135,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onSubmit }) => {
                   type="number"
                   min="0.1"
                   step="0.1"
-                  placeholder="Qty"
+                  placeholder="Qté"
                   value={ingredient.quantity || ''}
                   onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
                   className="input w-full"
@@ -178,7 +178,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onSubmit }) => {
       
       <div>
         <button type="submit" className="btn btn-primary w-full">
-          Add Recipe
+          Ajouter la recette
         </button>
       </div>
     </form>

@@ -7,9 +7,9 @@ interface RecipeCardProps {
 }
 
 const mealTypeTranslations: Record<string, string> = {
-  'petit déjeuner': 'Breakfast',
-  'déjeuner': 'Lunch',
-  'dîner': 'Dinner'
+  'petit déjeuner': 'Petit déjeuner',
+  'déjeuner': 'Déjeuner',
+  'dîner': 'Dîner'
 };
 
 const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onDelete }) => {
@@ -23,7 +23,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onDelete }) => {
       </div>
       
       <div className="mb-4">
-        <h4 className="text-sm font-medium mb-2">Ingredients:</h4>
+        <h4 className="text-sm font-medium mb-2">Ingrédients :</h4>
         <ul className="space-y-1 text-sm">
           {recipe.ingredients.map((ingredient, index) => (
             <li key={index} className="flex justify-between">
@@ -41,7 +41,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onDelete }) => {
           onClick={() => onDelete(recipe.name)}
           className="text-sm text-red-500 hover:text-red-700 transition-colors"
         >
-          Delete Recipe
+          Supprimer la recette
         </button>
       )}
     </div>

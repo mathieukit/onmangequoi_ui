@@ -56,22 +56,22 @@ export default function RecipesPage() {
   return (
     <div className="max-w-6xl mx-auto">
       <section className="mb-8 text-center">
-        <h1 className="text-3xl font-bold mb-4 text-[var(--primary)]">Recipes</h1>
-        <p className="mb-6">Browse and manage your recipes</p>
+        <h1 className="text-3xl font-bold mb-4 text-[var(--primary)]">Recettes</h1>
+        <p className="mb-6">Parcourez et gérez vos recettes</p>
         
         {error && (
           <div className="text-red-500 mb-4">{error}</div>
         )}
         
         <div className="mb-6">
-          <label htmlFor="filterMealType" className="mr-2">Filter by meal type:</label>
+          <label htmlFor="filterMealType" className="mr-2">Filtrer par type de repas:</label>
           <select
             id="filterMealType"
             value={filterMealType}
             onChange={(e) => setFilterMealType(e.target.value)}
             className="input"
           >
-            <option value="all">All meal types</option>
+            <option value="all">Tous les repas</option>
             <option value="petit déjeuner">Breakfast (Petit déjeuner)</option>
             <option value="déjeuner">Lunch (Déjeuner)</option>
             <option value="dîner">Dinner (Dîner)</option>
@@ -82,11 +82,11 @@ export default function RecipesPage() {
       {loading ? (
         <div className="text-center py-12">
           <LoadingSpinner size="large" />
-          <p className="mt-4">Loading recipes...</p>
+          <p className="mt-4">Chargement des recettes...</p>
         </div>
       ) : filteredRecipes.length === 0 ? (
         <div className="card p-8 text-center">
-          <p className="text-lg mb-4">No recipes found</p>
+          <p className="text-lg mb-4">Aucune recette</p>
           <p>
             {filterMealType !== 'all'
               ? `No recipes found for the selected meal type. Try a different filter or add new recipes.`

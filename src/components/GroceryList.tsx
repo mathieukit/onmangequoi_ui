@@ -22,10 +22,10 @@ const GroceryList: React.FC<GroceryListProps> = ({ ingredients }) => {
 
   return (
     <div className="card">
-      <h2 className="text-xl font-semibold mb-4 text-[var(--primary)]">Grocery List</h2>
+      <h2 className="text-xl font-semibold mb-4 text-[var(--primary)]">Liste de Courses</h2>
       
       {sortedGroups.length === 0 ? (
-        <p className="text-center py-4">No ingredients in the grocery list.</p>
+        <p className="text-center py-4">Aucun ingrédient dans la liste de courses.</p>
       ) : (
         <div className="space-y-4">
           {sortedGroups.map(group => (

@@ -41,8 +41,8 @@ export default function AddRecipePage() {
   return (
     <div className="max-w-2xl mx-auto">
       <section className="mb-8 text-center">
-        <h1 className="text-3xl font-bold mb-4 text-[var(--primary)]">Add New Recipe</h1>
-        <p className="mb-6">Create a new recipe to add to your collection</p>
+        <h1 className="text-3xl font-bold mb-4 text-[var(--primary)]">Ajouter une recette</h1>
+        <p className="mb-6">Créez une nouvelle recette à ajouter à votre collection</p>
         
         {error && (
           <div className="text-red-500 mb-4 p-3 bg-red-50 rounded-md">{error}</div>
@@ -50,7 +50,7 @@ export default function AddRecipePage() {
         
         {success && (
           <div className="text-green-600 mb-4 p-3 bg-green-50 rounded-md">
-            Recipe added successfully!
+            Recette ajoutée avec succès!
           </div>
         )}
       </section>
@@ -58,7 +58,7 @@ export default function AddRecipePage() {
       {loading ? (
         <div className="card p-8 text-center">
           <LoadingSpinner size="large" />
-          <p className="mt-4">Adding recipe...</p>
+          <p className="mt-4">Ajout de la recette...</p>
         </div>
       ) : (
         <div className="card">
@@ -71,7 +71,7 @@ export default function AddRecipePage() {
           onClick={() => router.push('/recipes')}
           className="text-[var(--secondary)] hover:text-[var(--secondary-hover)] transition-colors"
         >
-          View all recipes
+          Voir toutes les recettes
         </button>
       </div>
     </div>
