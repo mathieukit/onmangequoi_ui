@@ -19,6 +19,7 @@ const GroceryList: React.FC = () => {
   const { recipes } = useRecipes();
   const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
   const [currentMenu, setCurrentMenu] = useState<Menu | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Fetch available menus on component mount
   useEffect(() => {
@@ -29,9 +30,8 @@ const GroceryList: React.FC = () => {
   }, [fetchSavedMenus]);
   
   // Handle menu selection
-  const handleMenuChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const menuId = parseInt(e.target.value);
-    if (!isNaN(menuId)) {
+  const handleMenuChange = async (menuId: number | null) => {
+    if (menuId !== null) {
       setSelectedMenuId(menuId);
       const menu = await fetchMenu(menuId);
       if (menu) {
@@ -145,25 +145,44 @@ const GroceryList: React.FC = () => {
       <div className="grocery-controls">
         <div className="menu-selector">
           <h3>Select a Menu</h3>
-          <div style={{ marginBottom: '20px' }}>
-            <select 
-              value={selectedMenuId || ''}
-              onChange={handleMenuChange}
-              style={{ 
-                padding: '10px', 
-                borderRadius: '4px', 
-                border: '1px solid #ddd', 
-                width: '100%',
-                maxWidth: '400px'
-              }}
-            >
-              <option value="">-- Select a Menu --</option>
-              {savedMenus.map(menu => (
-                <option key={menu.id} value={menu.id}>
-                  {menu.name}
-                </option>
-              ))}
-            </select>
+          <div className="filter-controls modern-filter" style={{ marginBottom: '20px' }}>
+            <div className="custom-dropdown" tabIndex={0} onBlur={() => setDropdownOpen(false)}>
+              <button
+                type="button"
+                className="custom-dropdown-btn"
+                onClick={() => setDropdownOpen((open) => !open)}
+              >
+                {selectedMenuId 
+                  ? savedMenus.find(menu => menu.id === selectedMenuId)?.name 
+                  : '-- Select a Menu --'}
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              {dropdownOpen && (
+                <ul className="custom-dropdown-list">
+                  <li
+                    className={`custom-dropdown-item${selectedMenuId === null ? ' selected' : ''}`}
+                    onMouseDown={() => {
+                      handleMenuChange(null);
+                      setDropdownOpen(false);
+                    }}
+                  >
+                    -- Select a Menu --
+                  </li>
+                  {savedMenus.map((menu) => (
+                    <li
+                      key={menu.id}
+                      className={`custom-dropdown-item${selectedMenuId === menu.id ? ' selected' : ''}`}
+                      onMouseDown={() => {
+                        handleMenuChange(menu.id);
+                        setDropdownOpen(false);
+                      }}
+                    >
+                      {menu.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
           
           <button
