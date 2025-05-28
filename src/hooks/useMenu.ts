@@ -49,9 +49,7 @@ export const useMenu = () => {
       setLoading(true);
       setError(null);
       
-      console.log('Creating menu draft with:', { menuName, dates, peopleCount });
       const response = await menuService.createMenuDraft(menuName, dates, peopleCount);
-      console.log('Menu draft response:', response);
       
       if (response.menu) {
         setMenuDraft(response.menu);
@@ -236,13 +234,12 @@ export const useMenu = () => {
   }, [menuDraft]);
 
   // Generate grocery list
-  const generateGroceryList = useCallback(async (recipeNames: string[]) => {
+  const generateGroceryList = useCallback(async (recipeIds: number[]) => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log('Generating grocery list with recipe names:', recipeNames);
-      const response = await menuService.generateGroceryList(recipeNames);
+      const response = await menuService.generateGroceryList(recipeIds);
       
       // Check for different possible response formats
       if (response.ingredients) {

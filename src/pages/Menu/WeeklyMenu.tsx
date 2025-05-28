@@ -141,10 +141,21 @@ const WeeklyMenu: React.FC = () => {
   
   // Handle adding a meal
   const handleAddMeal = (dayIndex: number, mealSlot: 'breakfast' | 'lunch' | 'dinner', recipeName: string) => {
+    // Find the recipe ID from the available recipes
+    const recipe = recipes.find(recipe => recipe.name === recipeName);
+    
+    if (!recipe || recipe.id === undefined) {
+      console.warn(`Adding meal without recipe ID: ${recipeName}`, {
+        availableRecipes: recipes.map(r => ({ id: r.id, name: r.name }))
+      });
+    }
+    
     const newMeal: MealServing = {
       recipe_name: recipeName,
+      recipe_id: recipe?.id, // Include the recipe ID if available
       people_count: peopleCount
     };
+    
     
     addMeal(dayIndex, mealSlot, newMeal);
   };
@@ -454,7 +465,14 @@ const WeeklyMenu: React.FC = () => {
                     day.breakfast.meals.map((meal, mealIndex) => (
                       <div key={`breakfast-${mealIndex}`} className="meal-card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <p className="meal-name">{meal.recipe_name}</p>
+                          <p className="meal-name">
+                            {meal.recipe_name}
+                            {meal.recipe_id !== undefined && (
+                              <span style={{ fontSize: '0.7em', color: '#888', marginLeft: '5px' }}>
+                                (ID: {meal.recipe_id})
+                              </span>
+                            )}
+                          </p>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                               <button
@@ -517,7 +535,14 @@ const WeeklyMenu: React.FC = () => {
                     day.lunch.meals.map((meal, mealIndex) => (
                       <div key={`lunch-${mealIndex}`} className="meal-card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <p className="meal-name">{meal.recipe_name}</p>
+                          <p className="meal-name">
+                            {meal.recipe_name}
+                            {meal.recipe_id !== undefined && (
+                              <span style={{ fontSize: '0.7em', color: '#888', marginLeft: '5px' }}>
+                                (ID: {meal.recipe_id})
+                              </span>
+                            )}
+                          </p>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                               <button
@@ -580,7 +605,14 @@ const WeeklyMenu: React.FC = () => {
                     day.dinner.meals.map((meal, mealIndex) => (
                       <div key={`dinner-${mealIndex}`} className="meal-card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <p className="meal-name">{meal.recipe_name}</p>
+                          <p className="meal-name">
+                            {meal.recipe_name}
+                            {meal.recipe_id !== undefined && (
+                              <span style={{ fontSize: '0.7em', color: '#888', marginLeft: '5px' }}>
+                                (ID: {meal.recipe_id})
+                              </span>
+                            )}
+                          </p>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                               <button

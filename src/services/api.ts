@@ -58,10 +58,10 @@ export const recipeService = {
 // Menu and grocery list services
 // All endpoints below require authentication (token in Authorization header)
 export const menuService = {
-  generateGroceryList: async (recipeNames: string[]): Promise<ApiResponse<GroceryItem[]>> => {
-    // We're sending recipe_names as the body (one entry per serving)
-    // This matches the FastAPI endpoint that expects: list[str]
-    const response = await api.post('/grocery-list', recipeNames);
+  generateGroceryList: async (recipeIds: number[]): Promise<ApiResponse<GroceryItem[]>> => {
+    // We're sending recipe_ids as the body (one entry per serving)
+    // This matches the FastAPI endpoint that expects: list[int]
+    const response = await api.post('/grocery-list', recipeIds);
     return response.data;
   },
   
@@ -87,14 +87,6 @@ export const menuService = {
         },
         body: JSON.stringify(dates) // Send dates as JSON array
       };
-      
-      // Log the exact request for debugging
-      console.log('Sending request to:', `${baseUrl}/create-menu-draft${queryString}`);
-      console.log('Request options:', {
-        method: requestOptions.method,
-        headers: requestOptions.headers,
-        body: requestOptions.body
-      });
       
       // Create fetch request with proper headers
       const response = await fetch(`${baseUrl}/create-menu-draft${queryString}`, requestOptions);

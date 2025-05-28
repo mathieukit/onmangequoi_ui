@@ -1,6 +1,7 @@
 // filepath: /Users/matthieukitengengoie/Desktop/random/onmangequoi_UI/src/pages/Menu/GroceryList.tsx
 import React, { useState, useEffect } from 'react';
 import { useMenu } from '../../hooks/useMenu';
+import { useRecipes } from '../../hooks/useRecipes';
 import { Link } from 'react-router-dom';
 import type { Menu, MenuDay, MealServing } from '../../types';
 
@@ -15,6 +16,7 @@ const GroceryList: React.FC = () => {
     fetchMenu
   } = useMenu();
   
+  const { recipes } = useRecipes();
   const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
   const [currentMenu, setCurrentMenu] = useState<Menu | null>(null);
 
@@ -41,11 +43,19 @@ const GroceryList: React.FC = () => {
     }
   };
   
-  // Extract recipe names from the menu, with the correct number of duplicates based on servings
-  const getMenuRecipeNames = (menu: Menu): string[] => {
+  // Extract recipe IDs from the menu, with the correct number of duplicates based on servings
+  const getMenuRecipeIds = (menu: Menu): number[] => {
     if (!menu) return [];
     
-    const recipeNames: string[] = [];
+    const recipeIds: number[] = [];
+    
+    // Create a mapping of recipe names to IDs for quick lookup
+    const recipeNameToId: Record<string, number> = {};
+    recipes.forEach(recipe => {
+      if (recipe.id !== undefined) {
+        recipeNameToId[recipe.name] = recipe.id;
+      }
+    });
     
     // Process each day
     menu.days.forEach((day: MenuDay) => {
@@ -56,26 +66,41 @@ const GroceryList: React.FC = () => {
         // Process each meal in this meal time - ensure it's the right type first
         if (mealTimeSlot && typeof mealTimeSlot !== 'string' && mealTimeSlot.meals) {
           mealTimeSlot.meals.forEach((meal: MealServing) => {
-            // Add recipe name once per serving
-            for (let i = 0; i < meal.people_count; i++) {
-              recipeNames.push(meal.recipe_name);
+            // If we have recipe_id directly in the meal, use it
+            if (meal.recipe_id !== undefined) {
+              for (let i = 0; i < meal.people_count; i++) {
+                recipeIds.push(meal.recipe_id);
+              }
+            } 
+            // Otherwise look up the ID by name
+            else if (recipeNameToId[meal.recipe_name]) {
+              for (let i = 0; i < meal.people_count; i++) {
+                recipeIds.push(recipeNameToId[meal.recipe_name]);
+              }
+            } else {
+              console.warn(`Recipe ID not found for: ${meal.recipe_name}`, {
+                availableRecipes: recipes.map(r => ({ id: r.id, name: r.name })),
+                recipeNameToId: { ...recipeNameToId },
+              });
             }
           });
         }
       });
     });
     
-    return recipeNames;
+    return recipeIds;
   };
 
   // Generate grocery list for the selected menu
   const handleGenerateList = async () => {
     if (!currentMenu) return;
     
-    const recipeNames = getMenuRecipeNames(currentMenu);
+    const recipeIds = getMenuRecipeIds(currentMenu);
     
-    if (recipeNames.length > 0) {
-      await generateGroceryList(recipeNames);
+    if (recipeIds.length > 0) {
+      await generateGroceryList(recipeIds);
+    } else {
+      console.warn("No recipe IDs found in the selected menu");
     }
   };
 
@@ -165,8 +190,17 @@ const GroceryList: React.FC = () => {
               <div className="recipe-summary">
                 <h5 style={{ marginBottom: '8px' }}>Recipes in this menu:</h5>
                 {(() => {
-                  // Count recipe occurrences
+                  // Count recipe occurrences and track recipe IDs
                   const recipeCount: Record<string, number> = {};
+                  const recipeIds: Record<string, number> = {};
+                  
+                  // Create a lookup map for recipe IDs
+                  const recipeNameToId: Record<string, number> = {};
+                  recipes.forEach(recipe => {
+                    if (recipe.id !== undefined) {
+                      recipeNameToId[recipe.name] = recipe.id;
+                    }
+                  });
                   
                   currentMenu.days.forEach(day => {
                     ['breakfast', 'lunch', 'dinner'].forEach(mealTime => {
@@ -176,6 +210,12 @@ const GroceryList: React.FC = () => {
                         mealTimeSlot.meals.forEach(meal => {
                           if (!recipeCount[meal.recipe_name]) {
                             recipeCount[meal.recipe_name] = 0;
+                            // Store recipe ID if available directly or via lookup
+                            if (meal.recipe_id) {
+                              recipeIds[meal.recipe_name] = meal.recipe_id;
+                            } else if (recipeNameToId[meal.recipe_name]) {
+                              recipeIds[meal.recipe_name] = recipeNameToId[meal.recipe_name];
+                            }
                           }
                           recipeCount[meal.recipe_name] += meal.people_count;
                         });
@@ -188,6 +228,11 @@ const GroceryList: React.FC = () => {
                       {Object.entries(recipeCount).map(([recipe, servings]) => (
                         <li key={recipe} style={{ marginBottom: '4px' }}>
                           <span style={{ fontWeight: 500 }}>{recipe}</span>: {servings} servings
+                          {recipeIds[recipe] !== undefined && (
+                            <span style={{ fontSize: '0.8em', color: '#888', marginLeft: '8px' }}>
+                              (ID: {recipeIds[recipe]})
+                            </span>
+                          )}
                         </li>
                       ))}
                     </ul>

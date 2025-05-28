@@ -24,6 +24,7 @@ export interface GroceryItem {
 
 export interface MealServing {
   recipe_name: string;
+  recipe_id?: number; // Add recipe_id field
   people_count: number;
 }
 
