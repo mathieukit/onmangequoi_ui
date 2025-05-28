@@ -11,7 +11,12 @@ const Layout: React.FC = () => {
       </main>
       <footer className="app-footer">
         <div className="footer-content">
-          <p>&copy; {new Date().getFullYear()} On Mange Quoi? - Your personal recipe manager and meal planner</p>
+          <div className="footer-copyright">
+            <p>&copy; {new Date().getFullYear()} On Mange Quoi? - Your personal recipe manager and meal planner</p>
+          </div>
+          <div className="footer-links">
+            <a href="#">Privacy Policy</a> • <a href="#">Terms of Service</a> • <a href="#">Contact</a>
+          </div>
         </div>
       </footer>
     </div>
