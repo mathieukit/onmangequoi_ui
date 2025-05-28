@@ -22,6 +22,29 @@ export interface GroceryItem {
   unit: string;
 }
 
+export interface MealServing {
+  recipe_name: string;
+  people_count: number;
+}
+
+export interface MealTimeSlot {
+  meals: MealServing[];
+}
+
+export interface MenuDay {
+  date: string;
+  breakfast: MealTimeSlot;
+  lunch: MealTimeSlot;
+  dinner: MealTimeSlot;
+}
+
+export interface Menu {
+  id?: number;
+  name: string;
+  days: MenuDay[];
+}
+
+// Legacy interface for backward compatibility
 export interface WeeklyMenu {
   [day: string]: {
     breakfast: {
@@ -37,6 +60,11 @@ export interface WeeklyMenu {
       mealType: string;
     };
   };
+}
+
+export interface MenuSummary {
+  id: number;
+  name: string;
 }
 
 export interface ApiResponse<T> {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Recipe, GroceryItem, WeeklyMenu, ApiResponse } from '../types';
+import type { Recipe, GroceryItem, WeeklyMenu, ApiResponse, Menu, MenuSummary } from '../types';
 
 // Create axios instance with base URL
 const api = axios.create({
@@ -59,18 +59,114 @@ export const recipeService = {
 // All endpoints below require authentication (token in Authorization header)
 export const menuService = {
   generateGroceryList: async (recipeNames: string[]): Promise<ApiResponse<GroceryItem[]>> => {
+    // We're sending recipe_names as the body (one entry per serving)
+    // This matches the FastAPI endpoint that expects: list[str]
     const response = await api.post('/grocery-list', recipeNames);
     return response.data;
   },
-
-  // Calls /weekly-menu with optional grocery list, always sends auth token
-  generateWeeklyMenu: async (includeGroceryList: boolean = false): Promise<{
+  
+  // Create a menu draft with specific dates and number of people
+  createMenuDraft: async (menuName: string, dates: string[], peopleCount: number): Promise<{
+    message: string;
+    menu: Menu;
+  }> => {
+    try {
+      // After multiple attempts, let's use a direct fetch approach to have more control over the request
+      const baseUrl = api.defaults.baseURL || '';
+      const token = localStorage.getItem('token');
+      
+      // Create query string for menu_name and people_count
+      const queryString = `?menu_name=${encodeURIComponent(menuName)}&people_count=${peopleCount}`;
+      
+      // Create request options
+      const requestOptions = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify(dates) // Send dates as JSON array
+      };
+      
+      // Log the exact request for debugging
+      console.log('Sending request to:', `${baseUrl}/create-menu-draft${queryString}`);
+      console.log('Request options:', {
+        method: requestOptions.method,
+        headers: requestOptions.headers,
+        body: requestOptions.body
+      });
+      
+      // Create fetch request with proper headers
+      const response = await fetch(`${baseUrl}/create-menu-draft${queryString}`, requestOptions);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API error response:', errorData);
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('API call error details:', error);
+      throw error;
+    }
+  },
+  
+  // Save a menu to the database
+  saveMenu: async (menu: Menu): Promise<{
+    message: string;
+    menu_id: number;
+    name: string;
+  }> => {
+    const response = await api.post('/save-menu', menu);
+    return response.data;
+  },
+  
+  // Get all menus
+  getMenus: async (): Promise<{
+    message: string;
+    menus: MenuSummary[];
+  }> => {
+    const response = await api.get('/get-menus');
+    return response.data;
+  },
+  
+  // Get a specific menu
+  getMenu: async (menuId: number): Promise<{
+    message: string;
+    menu: Menu;
+  }> => {
+    const response = await api.get(`/get-menu/${menuId}`);
+    return response.data;
+  },
+  
+  // Delete a menu
+  deleteMenu: async (menuId: number): Promise<{
+    message: string;
+  }> => {
+    const response = await api.delete(`/delete-menu/${menuId}`);
+    return response.data;
+  },
+  
+  // Legacy method for backward compatibility
+  generateWeeklyMenu: async (_includeGroceryList: boolean = false): Promise<{
     message: string;
     menu: WeeklyMenu;
     grocery_list?: GroceryItem[];
   }> => {
-    const response = await api.get(`/weekly-menu?include_grocery_list=${includeGroceryList}`);
-    return response.data;
+    // This is now deprecated - create a menu draft for the current week instead
+    const today = new Date();
+    const weekDates = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      return date.toISOString().split('T')[0];
+    });
+    
+    const response = await menuService.createMenuDraft("Weekly Menu", weekDates, 1);
+    return {
+      message: response.message,
+      menu: response.menu as any as WeeklyMenu // Type conversion for backward compatibility
+    };
   },
 };
 
