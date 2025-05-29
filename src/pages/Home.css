@@ -59,6 +59,19 @@
   perspective: 1000px;
 }
 
+@media (min-width: 768px) {
+  .features {
+    display: grid;
+    grid-auto-rows: 1fr;
+  }
+  
+  .feature-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 .feature-card:nth-child(1) { transition-delay: 0.1s; }
 .feature-card:nth-child(2) { transition-delay: 0.2s; }
 .feature-card:nth-child(3) { transition-delay: 0.3s; }
@@ -105,17 +118,21 @@
   font-size: 2.5rem;
   margin-bottom: 20px;
   color: var(--primary-color);
+  display: flex;
+  justify-content: center;
 }
 
 .feature-card h3 {
   font-size: 1.6rem;
   margin-bottom: 15px;
   color: var(--primary-color);
+  text-align: center;
 }
 
 .feature-card p {
   color: var(--text-light);
   line-height: 1.6;
+  flex-grow: 1;
 }
 
 /* CTA Buttons */
@@ -287,6 +304,18 @@
   margin: 0 auto;
 }
 
+@media (min-width: 768px) {
+  .testimonials-grid {
+    grid-auto-rows: 1fr;
+  }
+  
+  .testimonial-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 .testimonial-card {
   background-color: white;
   padding: 30px;
@@ -323,6 +352,7 @@
   margin-bottom: 20px;
   font-style: italic;
   color: var(--text-color);
+  flex-grow: 1;
 }
 
 .testimonial-content::before {

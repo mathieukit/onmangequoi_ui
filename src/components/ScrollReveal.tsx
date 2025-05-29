@@ -2,14 +2,16 @@
  * ScrollReveal Component
  * Handles revealing elements as they scroll into view
  */
-import React, { ReactNode, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import type { ReactNode } from 'react';
 
 interface ScrollRevealProps {
   children: ReactNode;
   className?: string;
+  delay?: number;
 }
 
-// Initialize the observer when the component mounts
+// Global intersection observer for general page elements
 export const initScrollReveal = (): void => {
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -19,16 +21,28 @@ export const initScrollReveal = (): void => {
     });
   }, { threshold: 0.1 });
   
-  // Target all elements with the reveal-on-scroll class
-  document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+  // Target all elements with the reveal-on-scroll class that are not managed by the component
+  document.querySelectorAll('.reveal-on-scroll:not([data-managed="true"])').forEach(el => {
     observer.observe(el);
   });
 };
 
-// ScrollReveal component
-const ScrollReveal: React.FC<ScrollRevealProps> = ({ children, className = "" }) => {
+// ScrollReveal component with ref
+const ScrollReveal: React.FC<ScrollRevealProps> = ({ children, className = "", delay = 0 }) => {
+  const elementRef = useRef<HTMLDivElement>(null);
+  
   useEffect(() => {
-    // Initialize a single element observer for this specific component
+    // Skip if no ref
+    if (!elementRef.current) return;
+    
+    // Mark as managed to avoid double observers
+    elementRef.current.setAttribute('data-managed', 'true');
+    
+    // Add the delay as a style if provided
+    if (delay > 0) {
+      elementRef.current.style.transitionDelay = `${delay}ms`;
+    }
+    
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -37,16 +51,16 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({ children, className = "" })
       });
     }, { threshold: 0.1 });
     
-    const elements = document.querySelectorAll('.reveal-on-scroll');
-    elements.forEach(el => observer.observe(el));
+    // Observe the current element
+    observer.observe(elementRef.current);
     
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [delay]);
 
   return (
-    <div className={`reveal-on-scroll ${className}`}>
+    <div ref={elementRef} className={`reveal-on-scroll ${className}`}>
       {children}
     </div>
   );
