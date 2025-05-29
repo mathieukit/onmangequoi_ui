@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMenu } from '../../hooks/useMenu';
 import type { MealServing, MenuDay, Recipe } from '../../types';
+import './WeeklyMenu.css';
 
 const WeeklyMenu: React.FC = () => {
   // State for menu generation form
@@ -12,6 +13,9 @@ const WeeklyMenu: React.FC = () => {
   const [showSavedMenus, setShowSavedMenus] = useState<boolean>(false);
   const [availableRecipesByType, setAvailableRecipesByType] = useState<Record<string, Recipe[]>>({});
   const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
+  
+  // State for collapsible days - track which days are expanded
+  const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
   
   // Use the menu hook for all menu-related functionality
   const {
@@ -31,8 +35,6 @@ const WeeklyMenu: React.FC = () => {
     addMeal
   } = useMenu();
 
-  // We'll use hardcoded meal type names in our component
-  
   // Fetch saved menus on component mount
   useEffect(() => {
     fetchSavedMenus();
@@ -54,15 +56,24 @@ const WeeklyMenu: React.FC = () => {
     }
   }, [recipes]);
 
+  // Toggle day expansion
+  const toggleDayExpansion = (dayIndex: number) => {
+    const newExpandedDays = new Set(expandedDays);
+    if (newExpandedDays.has(dayIndex)) {
+      newExpandedDays.delete(dayIndex);
+    } else {
+      newExpandedDays.add(dayIndex);
+    }
+    setExpandedDays(newExpandedDays);
+  };
+
   // Handle date selection
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = e.target.value;
     
     if (selectedDates.includes(date)) {
-      // Remove date if already selected
       setSelectedDates(selectedDates.filter(d => d !== date));
     } else {
-      // Add date if not already selected
       setSelectedDates([...selectedDates, date].sort());
     }
   };
@@ -128,6 +139,16 @@ const WeeklyMenu: React.FC = () => {
       day: 'numeric' 
     });
   };
+
+  // Format date for compact display
+  const formatDateCompact = (dateString: string) => {
+    const date = new Date(dateString);
+    return {
+      weekday: date.toLocaleDateString('en-US', { weekday: 'short' }),
+      day: date.getDate(),
+      month: date.toLocaleDateString('en-US', { month: 'short' })
+    };
+  };
   
   // Handle serving count changes
   const handleServingChange = (dayIndex: number, mealType: 'breakfast' | 'lunch' | 'dinner', mealIndex: number, newCount: number) => {
@@ -141,7 +162,6 @@ const WeeklyMenu: React.FC = () => {
   
   // Handle adding a meal
   const handleAddMeal = (dayIndex: number, mealSlot: 'breakfast' | 'lunch' | 'dinner', recipeName: string) => {
-    // Find the recipe ID from the available recipes
     const recipe = recipes.find(recipe => recipe.name === recipeName);
     
     if (!recipe || recipe.id === undefined) {
@@ -152,12 +172,28 @@ const WeeklyMenu: React.FC = () => {
     
     const newMeal: MealServing = {
       recipe_name: recipeName,
-      recipe_id: recipe?.id, // Include the recipe ID if available
+      recipe_id: recipe?.id,
       people_count: peopleCount
     };
     
-    
     addMeal(dayIndex, mealSlot, newMeal);
+  };
+
+  // Get meal summary for compact view
+  const getMealSummary = (meals: MealServing[]) => {
+    if (meals.length === 0) return 'No meal planned';
+    if (meals.length === 1) return meals[0].recipe_name;
+    return `${meals[0].recipe_name} +${meals.length - 1} more`;
+  };
+
+  // Get meal type icon
+  const getMealIcon = (mealType: string) => {
+    switch (mealType) {
+      case 'breakfast': return '🌅';
+      case 'lunch': return '☀️';
+      case 'dinner': return '🌙';
+      default: return '🍽️';
+    }
   };
   
   // Reset to menu form
@@ -165,30 +201,29 @@ const WeeklyMenu: React.FC = () => {
     setShowMenuForm(true);
     setShowSavedMenus(false);
     setSelectedMenuId(null);
+    setExpandedDays(new Set());
   };
   
   // Check if the component is in a loading state
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div className="loading-modern">
+        <div className="loading-spinner"></div>
+        <div className="loading-text">Loading...</div>
+      </div>
+    );
   }
 
   return (
     <div className="weekly-menu-container">
       {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '2rem',
-        flexWrap: 'wrap',
-        rowGap: '1rem',
-      }}>
-        <h1 style={{ margin: 0 }}>Weekly Menu</h1>
+      <div className="weekly-menu-header">
+        <h1 className="weekly-menu-title">Weekly Menu</h1>
         
         {/* Top action buttons */}
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="header-actions">
           <button 
-            className="btn-secondary" 
+            className="modern-btn btn-secondary-modern" 
             onClick={() => {
               setShowMenuForm(true);
               setShowSavedMenus(false);
@@ -199,7 +234,7 @@ const WeeklyMenu: React.FC = () => {
           </button>
           
           <button 
-            className="btn-secondary"
+            className="modern-btn btn-secondary-modern"
             onClick={() => {
               setShowSavedMenus(true);
               setShowMenuForm(false);
@@ -211,7 +246,7 @@ const WeeklyMenu: React.FC = () => {
           
           {menuDraft && !showMenuForm && !showSavedMenus && (
             <button 
-              className="btn-primary"
+              className="modern-btn btn-primary-modern"
               onClick={handleSaveMenu}
             >
               Save Menu
@@ -222,26 +257,21 @@ const WeeklyMenu: React.FC = () => {
       
       {/* Error message */}
       {error && (
-        <div className="error-message" style={{ marginBottom: '20px', padding: '15px' }}>
-          <h4 style={{ marginTop: 0 }}>Error:</h4>
-          <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{error}</p>
+        <div className="error-message-modern">
+          <h4>Error:</h4>
+          <p>{error}</p>
         </div>
       )}
       
       {/* Menu Creation Form */}
       {showMenuForm && (
-        <div className="menu-form" style={{
-          backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '8px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          marginBottom: '20px'
-        }}>
-          <h2>Create New Menu</h2>
+        <div className="menu-form-modern">
+          <h2 className="form-title">Create New Menu</h2>
           
-          <div className="form-group">
-            <label htmlFor="menu-name">Menu Name</label>
+          <div className="form-group-modern">
+            <label className="form-label-modern" htmlFor="menu-name">Menu Name</label>
             <input
+              className="form-input-modern"
               type="text"
               id="menu-name"
               value={menuName}
@@ -250,9 +280,10 @@ const WeeklyMenu: React.FC = () => {
             />
           </div>
           
-          <div className="form-group">
-            <label htmlFor="people-count">Number of People</label>
+          <div className="form-group-modern">
+            <label className="form-label-modern" htmlFor="people-count">Number of People</label>
             <input
+              className="form-input-modern"
               type="number"
               id="people-count"
               min="1"
@@ -262,19 +293,18 @@ const WeeklyMenu: React.FC = () => {
             />
           </div>
           
-          <div className="form-group">
-            <label>Select Dates</label>
-            <div style={{ marginBottom: '10px' }}>
+          <div className="form-group-modern">
+            <label className="form-label-modern">Select Dates</label>
+            <div className="date-controls">
               <button
-                className="btn-small btn-secondary"
+                className="modern-btn btn-outline-modern"
                 onClick={() => setShowDatePicker(!showDatePicker)}
-                style={{ marginRight: '10px' }}
               >
                 {showDatePicker ? 'Hide Calendar' : 'Show Calendar'}
               </button>
               
               <button
-                className="btn-small btn-secondary"
+                className="modern-btn btn-outline-modern"
                 onClick={generateWeekDates}
               >
                 Select This Week
@@ -282,18 +312,13 @@ const WeeklyMenu: React.FC = () => {
             </div>
             
             {showDatePicker && (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                gap: '10px',
-                marginTop: '10px'
-              }}>
+              <div className="date-picker-grid">
                 {Array.from({ length: 14 }, (_, i) => {
                   const date = new Date();
                   date.setDate(date.getDate() + i);
                   const dateStr = date.toISOString().split('T')[0];
                   return (
-                    <div key={dateStr} className="checkbox-group">
+                    <div key={dateStr} className="checkbox-group-modern">
                       <input
                         type="checkbox"
                         id={`date-${dateStr}`}
@@ -315,34 +340,18 @@ const WeeklyMenu: React.FC = () => {
             )}
             
             {selectedDates.length > 0 && (
-              <div style={{ marginTop: '10px' }}>
+              <div className="selected-dates">
                 <h4>Selected Dates:</h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                <div className="date-tags">
                   {selectedDates.map(date => (
-                    <span 
-                      key={date}
-                      style={{
-                        background: '#f0f0f0',
-                        padding: '5px 10px',
-                        borderRadius: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px'
-                      }}
-                    >
+                    <span key={date} className="date-tag">
                       {new Date(date).toLocaleDateString('en-US', {
                         weekday: 'short',
                         month: 'short',
                         day: 'numeric'
                       })}
                       <button
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                          color: '#ff6b6b'
-                        }}
+                        className="date-tag-remove"
                         onClick={() => setSelectedDates(selectedDates.filter(d => d !== date))}
                       >
                         ×
@@ -356,7 +365,7 @@ const WeeklyMenu: React.FC = () => {
           
           <div className="form-actions">
             <button
-              className="btn-primary"
+              className="modern-btn btn-primary-modern"
               onClick={handleGenerateMenu}
               disabled={selectedDates.length === 0 || loading}
             >
@@ -368,47 +377,34 @@ const WeeklyMenu: React.FC = () => {
       
       {/* Saved Menus List */}
       {showSavedMenus && (
-        <div className="saved-menus" style={{
-          backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '8px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          marginBottom: '20px'
-        }}>
-          <h2>Saved Menus</h2>
+        <div className="saved-menus-modern">
+          <h2 className="form-title">Saved Menus</h2>
           
           {savedMenus.length === 0 ? (
-            <div className="empty-state">
+            <div className="empty-state-modern">
+              <div className="empty-state-icon">📋</div>
               <p>You don't have any saved menus yet.</p>
             </div>
           ) : (
-            <div style={{ marginTop: '20px' }}>
+            <div>
               {savedMenus.map(menu => (
-                <div 
-                  key={menu.id}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '15px',
-                    borderBottom: '1px solid #eee',
-                  }}
-                >
-                  <div>
-                    <h3 style={{ margin: 0 }}>{menu.name}</h3>
+                <div key={menu.id} className="saved-menu-item">
+                  <div className="saved-menu-info">
+                    <h3>{menu.name}</h3>
                   </div>
                   
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                  <div className="saved-menu-actions">
                     <button
-                      className="btn-small btn-primary"
+                      className="modern-btn btn-small-modern btn-primary-modern"
                       onClick={() => handleLoadMenu(menu.id)}
                     >
                       Load
                     </button>
                     
                     <button
-                      className="btn-small btn-danger"
+                      className="modern-btn btn-small-modern btn-outline-modern"
                       onClick={() => handleDeleteMenu(menu.id)}
+                      style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
                     >
                       Delete
                     </button>
@@ -420,261 +416,299 @@ const WeeklyMenu: React.FC = () => {
         </div>
       )}
       
-      {/* Menu Display */}
+      {/* Menu Display - New Compact Design */}
       {currentMenu && !showMenuForm && !showSavedMenus && (
         <>
-          <div className="menu-header" style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            marginBottom: '20px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <h2>{currentMenu.name} {selectedMenuId !== null && `(ID: ${selectedMenuId})`}</h2>
-            <div>
+          <div className="menu-header-modern">
+            <div className="menu-info">
+              <h2 className="menu-title">{currentMenu.name}</h2>
+              {selectedMenuId !== null && (
+                <span className="menu-id">ID: {selectedMenuId}</span>
+              )}
+            </div>
+            <div className="menu-actions-header">
               {!selectedMenuId && (
                 <button
-                  className="btn-primary"
+                  className="modern-btn btn-primary-modern"
                   onClick={handleSaveMenu}
-                  style={{ marginRight: '10px' }}
                 >
                   Save Menu
                 </button>
               )}
               <button
-                className="btn-secondary"
+                className="modern-btn btn-outline-modern"
                 onClick={handleNewMenu}
               >
-                Create New Menu
+                New Menu
               </button>
             </div>
           </div>
           
-          <div className="weekly-menu">
-            {currentMenu.days.map((day, dayIndex) => (
-              <div key={day.date} className="day-menu">
-                <h2>{formatDateForDisplay(day.date)}</h2>
-                
-                {/* Breakfast */}
-                <div className="meals">
-                  <h3>Breakfast</h3>
-                  {day.breakfast.meals.length > 0 ? (
-                    day.breakfast.meals.map((meal, mealIndex) => (
-                      <div key={`breakfast-${mealIndex}`} className="meal-card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <p className="meal-name">
-                            {meal.recipe_name}
-                            {meal.recipe_id !== undefined && (
-                              <span style={{ fontSize: '0.7em', color: '#888', marginLeft: '5px' }}>
-                                (ID: {meal.recipe_id})
-                              </span>
-                            )}
-                          </p>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                              <button
-                                onClick={() => handleServingChange(dayIndex, 'breakfast', mealIndex, Math.max(1, meal.people_count - 1))}
-                                style={{ background: 'none', border: '1px solid #ddd', borderRadius: '4px', width: '30px', height: '30px', cursor: 'pointer' }}
-                              >
-                                -
-                              </button>
-                              <span style={{ margin: '0 10px' }}>{meal.people_count}</span>
-                              <button
-                                onClick={() => handleServingChange(dayIndex, 'breakfast', mealIndex, meal.people_count + 1)}
-                                style={{ background: 'none', border: '1px solid #ddd', borderRadius: '4px', width: '30px', height: '30px', cursor: 'pointer' }}
-                              >
-                                +
-                              </button>
-                            </div>
-                            <button
-                              onClick={() => handleRemoveMeal(dayIndex, 'breakfast', mealIndex)}
-                              style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer' }}
-                            >
-                              Remove
-                            </button>
+          <div className="weekly-menu-overview">
+            {currentMenu.days.map((day, dayIndex) => {
+              const isExpanded = expandedDays.has(dayIndex);
+              const dateInfo = formatDateCompact(day.date);
+              
+              return (
+                <div key={day.date} className={`day-card ${isExpanded ? 'expanded' : 'collapsed'}`}>
+                  {/* Day Header - Always Visible */}
+                  <div 
+                    className="day-card-header"
+                    onClick={() => toggleDayExpansion(dayIndex)}
+                  >
+                    <div className="day-info">
+                      <div className="day-date">
+                        <span className="day-weekday">{dateInfo.weekday}</span>
+                        <span className="day-number">{dateInfo.day}</span>
+                        <span className="day-month">{dateInfo.month}</span>
+                      </div>
+                      
+                      {!isExpanded && (
+                        <div className="day-summary">
+                          <div className="meal-summary">
+                            <span className="meal-icon">🌅</span>
+                            <span className="meal-text">{getMealSummary(day.breakfast.meals)}</span>
+                          </div>
+                          <div className="meal-summary">
+                            <span className="meal-icon">☀️</span>
+                            <span className="meal-text">{getMealSummary(day.lunch.meals)}</span>
+                          </div>
+                          <div className="meal-summary">
+                            <span className="meal-icon">🌙</span>
+                            <span className="meal-text">{getMealSummary(day.dinner.meals)}</span>
                           </div>
                         </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="meal-card">
-                      <p>No breakfast planned</p>
+                      )}
                     </div>
-                  )}
-                  {/* Add meal dropdown */}
-                  {availableRecipesByType['petit déjeuner'] && (
-                    <div style={{ marginTop: '10px' }}>
-                      <select
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleAddMeal(dayIndex, 'breakfast', e.target.value);
-                            e.target.value = '';
-                          }
-                        }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd', width: '100%' }}
-                        value=""
-                      >
-                        <option value="" disabled>Add breakfast</option>
-                        {availableRecipesByType['petit déjeuner'].map(recipe => (
-                          <option key={recipe.id} value={recipe.name}>
-                            {recipe.name}
-                          </option>
-                        ))}
-                      </select>
+                    
+                    <div className="expand-indicator">
+                      <span className={`expand-arrow ${isExpanded ? 'expanded' : ''}`}>▼</span>
+                    </div>
+                  </div>
+                  
+                  {/* Day Content - Expandable */}
+                  {isExpanded && (
+                    <div className="day-card-content">
+                      {/* Breakfast */}
+                      <div className="meal-section">
+                        <div className="meal-type-header">
+                          <div className="meal-type-icon breakfast-icon">🌅</div>
+                          <h3 className="meal-type-title">Breakfast</h3>
+                        </div>
+                        
+                        {day.breakfast.meals.length > 0 ? (
+                          day.breakfast.meals.map((meal, mealIndex) => (
+                            <div key={`breakfast-${mealIndex}`} className="meal-card-modern">
+                              <div className="meal-content">
+                                <p className="meal-name-modern">
+                                  {meal.recipe_name}
+                                  {meal.recipe_id !== undefined && (
+                                    <span className="meal-id"> (ID: {meal.recipe_id})</span>
+                                  )}
+                                </p>
+                                <div className="meal-controls">
+                                  <div className="serving-controls">
+                                    <button
+                                      className="serving-btn"
+                                      onClick={() => handleServingChange(dayIndex, 'breakfast', mealIndex, Math.max(1, meal.people_count - 1))}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="serving-count">{meal.people_count}</span>
+                                    <button
+                                      className="serving-btn"
+                                      onClick={() => handleServingChange(dayIndex, 'breakfast', mealIndex, meal.people_count + 1)}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                  <button
+                                    className="remove-meal-btn"
+                                    onClick={() => handleRemoveMeal(dayIndex, 'breakfast', mealIndex)}
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="empty-meal">No breakfast planned</div>
+                        )}
+                        
+                        {availableRecipesByType['petit déjeuner'] && (
+                          <div className="add-meal-dropdown">
+                            <select
+                              className="meal-select-modern"
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  handleAddMeal(dayIndex, 'breakfast', e.target.value);
+                                  e.target.value = '';
+                                }
+                              }}
+                              value=""
+                            >
+                              <option value="" disabled>Add breakfast</option>
+                              {availableRecipesByType['petit déjeuner'].map(recipe => (
+                                <option key={recipe.id} value={recipe.name}>
+                                  {recipe.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Lunch */}
+                      <div className="meal-section">
+                        <div className="meal-type-header">
+                          <div className="meal-type-icon lunch-icon">☀️</div>
+                          <h3 className="meal-type-title">Lunch</h3>
+                        </div>
+                        
+                        {day.lunch.meals.length > 0 ? (
+                          day.lunch.meals.map((meal, mealIndex) => (
+                            <div key={`lunch-${mealIndex}`} className="meal-card-modern">
+                              <div className="meal-content">
+                                <p className="meal-name-modern">
+                                  {meal.recipe_name}
+                                  {meal.recipe_id !== undefined && (
+                                    <span className="meal-id"> (ID: {meal.recipe_id})</span>
+                                  )}
+                                </p>
+                                <div className="meal-controls">
+                                  <div className="serving-controls">
+                                    <button
+                                      className="serving-btn"
+                                      onClick={() => handleServingChange(dayIndex, 'lunch', mealIndex, Math.max(1, meal.people_count - 1))}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="serving-count">{meal.people_count}</span>
+                                    <button
+                                      className="serving-btn"
+                                      onClick={() => handleServingChange(dayIndex, 'lunch', mealIndex, meal.people_count + 1)}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                  <button
+                                    className="remove-meal-btn"
+                                    onClick={() => handleRemoveMeal(dayIndex, 'lunch', mealIndex)}
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="empty-meal">No lunch planned</div>
+                        )}
+                        
+                        {availableRecipesByType['déjeuner'] && (
+                          <div className="add-meal-dropdown">
+                            <select
+                              className="meal-select-modern"
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  handleAddMeal(dayIndex, 'lunch', e.target.value);
+                                  e.target.value = '';
+                                }
+                              }}
+                              value=""
+                            >
+                              <option value="" disabled>Add lunch</option>
+                              {availableRecipesByType['déjeuner'].map(recipe => (
+                                <option key={recipe.id} value={recipe.name}>
+                                  {recipe.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Dinner */}
+                      <div className="meal-section">
+                        <div className="meal-type-header">
+                          <div className="meal-type-icon dinner-icon">🌙</div>
+                          <h3 className="meal-type-title">Dinner</h3>
+                        </div>
+                        
+                        {day.dinner.meals.length > 0 ? (
+                          day.dinner.meals.map((meal, mealIndex) => (
+                            <div key={`dinner-${mealIndex}`} className="meal-card-modern">
+                              <div className="meal-content">
+                                <p className="meal-name-modern">
+                                  {meal.recipe_name}
+                                  {meal.recipe_id !== undefined && (
+                                    <span className="meal-id"> (ID: {meal.recipe_id})</span>
+                                  )}
+                                </p>
+                                <div className="meal-controls">
+                                  <div className="serving-controls">
+                                    <button
+                                      className="serving-btn"
+                                      onClick={() => handleServingChange(dayIndex, 'dinner', mealIndex, Math.max(1, meal.people_count - 1))}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="serving-count">{meal.people_count}</span>
+                                    <button
+                                      className="serving-btn"
+                                      onClick={() => handleServingChange(dayIndex, 'dinner', mealIndex, meal.people_count + 1)}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                  <button
+                                    className="remove-meal-btn"
+                                    onClick={() => handleRemoveMeal(dayIndex, 'dinner', mealIndex)}
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="empty-meal">No dinner planned</div>
+                        )}
+                        
+                        {availableRecipesByType['dîner'] && (
+                          <div className="add-meal-dropdown">
+                            <select
+                              className="meal-select-modern"
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  handleAddMeal(dayIndex, 'dinner', e.target.value);
+                                  e.target.value = '';
+                                }
+                              }}
+                              value=""
+                            >
+                              <option value="" disabled>Add dinner</option>
+                              {availableRecipesByType['dîner'].map(recipe => (
+                                <option key={recipe.id} value={recipe.name}>
+                                  {recipe.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
-                
-                {/* Lunch */}
-                <div className="meals">
-                  <h3>Lunch</h3>
-                  {day.lunch.meals.length > 0 ? (
-                    day.lunch.meals.map((meal, mealIndex) => (
-                      <div key={`lunch-${mealIndex}`} className="meal-card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <p className="meal-name">
-                            {meal.recipe_name}
-                            {meal.recipe_id !== undefined && (
-                              <span style={{ fontSize: '0.7em', color: '#888', marginLeft: '5px' }}>
-                                (ID: {meal.recipe_id})
-                              </span>
-                            )}
-                          </p>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                              <button
-                                onClick={() => handleServingChange(dayIndex, 'lunch', mealIndex, Math.max(1, meal.people_count - 1))}
-                                style={{ background: 'none', border: '1px solid #ddd', borderRadius: '4px', width: '30px', height: '30px', cursor: 'pointer' }}
-                              >
-                                -
-                              </button>
-                              <span style={{ margin: '0 10px' }}>{meal.people_count}</span>
-                              <button
-                                onClick={() => handleServingChange(dayIndex, 'lunch', mealIndex, meal.people_count + 1)}
-                                style={{ background: 'none', border: '1px solid #ddd', borderRadius: '4px', width: '30px', height: '30px', cursor: 'pointer' }}
-                              >
-                                +
-                              </button>
-                            </div>
-                            <button
-                              onClick={() => handleRemoveMeal(dayIndex, 'lunch', mealIndex)}
-                              style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer' }}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="meal-card">
-                      <p>No lunch planned</p>
-                    </div>
-                  )}
-                  {/* Add meal dropdown */}
-                  {availableRecipesByType['déjeuner'] && (
-                    <div style={{ marginTop: '10px' }}>
-                      <select
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleAddMeal(dayIndex, 'lunch', e.target.value);
-                            e.target.value = '';
-                          }
-                        }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd', width: '100%' }}
-                        value=""
-                      >
-                        <option value="" disabled>Add lunch</option>
-                        {availableRecipesByType['déjeuner'].map(recipe => (
-                          <option key={recipe.id} value={recipe.name}>
-                            {recipe.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Dinner */}
-                <div className="meals">
-                  <h3>Dinner</h3>
-                  {day.dinner.meals.length > 0 ? (
-                    day.dinner.meals.map((meal, mealIndex) => (
-                      <div key={`dinner-${mealIndex}`} className="meal-card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <p className="meal-name">
-                            {meal.recipe_name}
-                            {meal.recipe_id !== undefined && (
-                              <span style={{ fontSize: '0.7em', color: '#888', marginLeft: '5px' }}>
-                                (ID: {meal.recipe_id})
-                              </span>
-                            )}
-                          </p>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                              <button
-                                onClick={() => handleServingChange(dayIndex, 'dinner', mealIndex, Math.max(1, meal.people_count - 1))}
-                                style={{ background: 'none', border: '1px solid #ddd', borderRadius: '4px', width: '30px', height: '30px', cursor: 'pointer' }}
-                              >
-                                -
-                              </button>
-                              <span style={{ margin: '0 10px' }}>{meal.people_count}</span>
-                              <button
-                                onClick={() => handleServingChange(dayIndex, 'dinner', mealIndex, meal.people_count + 1)}
-                                style={{ background: 'none', border: '1px solid #ddd', borderRadius: '4px', width: '30px', height: '30px', cursor: 'pointer' }}
-                              >
-                                +
-                              </button>
-                            </div>
-                            <button
-                              onClick={() => handleRemoveMeal(dayIndex, 'dinner', mealIndex)}
-                              style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer' }}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="meal-card">
-                      <p>No dinner planned</p>
-                    </div>
-                  )}
-                  {/* Add meal dropdown */}
-                  {availableRecipesByType['dîner'] && (
-                    <div style={{ marginTop: '10px' }}>
-                      <select
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleAddMeal(dayIndex, 'dinner', e.target.value);
-                            e.target.value = '';
-                          }
-                        }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd', width: '100%' }}
-                        value=""
-                      >
-                        <option value="" disabled>Add dinner</option>
-                        {availableRecipesByType['dîner'].map(recipe => (
-                          <option key={recipe.id} value={recipe.name}>
-                            {recipe.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           
-          {/* Save button at bottom */}
-          <div className="menu-actions">
+          {/* Bottom Actions */}
+          <div className="menu-bottom-actions">
             <button
-              className="btn-primary"
+              className="modern-btn btn-primary-modern"
               onClick={handleSaveMenu}
             >
               Save Menu
@@ -685,17 +719,18 @@ const WeeklyMenu: React.FC = () => {
       
       {/* Empty state when no menu is selected or created */}
       {!currentMenu && !showMenuForm && !showSavedMenus && (
-        <div className="empty-state">
+        <div className="empty-state-modern">
+          <div className="empty-state-icon">🍽️</div>
           <p>Create a new menu or load a saved menu to get started.</p>
-          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+          <div className="empty-state-actions">
             <button
-              className="btn-primary"
+              className="modern-btn btn-primary-modern"
               onClick={handleNewMenu}
             >
               Create New Menu
             </button>
             <button
-              className="btn-secondary"
+              className="modern-btn btn-secondary-modern"
               onClick={() => setShowSavedMenus(true)}
             >
               Load Saved Menu
