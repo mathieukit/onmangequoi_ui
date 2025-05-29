@@ -1,9 +1,9 @@
-// filepath: /Users/matthieukitengengoie/Desktop/random/onmangequoi_UI/src/pages/Menu/GroceryList.tsx
 import React, { useState, useEffect } from 'react';
 import { useMenu } from '../../hooks/useMenu';
 import { useRecipes } from '../../hooks/useRecipes';
 import { Link } from 'react-router-dom';
 import type { Menu, MenuDay, MealServing } from '../../types';
+import './GroceryList.css';
 
 const GroceryList: React.FC = () => {
   const { 
@@ -20,6 +20,8 @@ const GroceryList: React.FC = () => {
   const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
   const [currentMenu, setCurrentMenu] = useState<Menu | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
   // Fetch available menus on component mount
   useEffect(() => {
@@ -99,27 +101,28 @@ const GroceryList: React.FC = () => {
     
     if (recipeIds.length > 0) {
       await generateGroceryList(recipeIds);
+      // Reset checked items when generating new list
+      setCheckedItems(new Set());
     } else {
       console.warn("No recipe IDs found in the selected menu");
     }
   };
 
-  // Group grocery items by category (simple implementation)
+  // Group grocery items by category with better categorization
   const groupedGroceryItems = groceryList.reduce<Record<string, typeof groceryList>>(
     (groups, item) => {
-      // This is a simple categorization, could be improved
       let category = 'Other';
       
       const lowerItem = item.item.toLowerCase();
-      if (['flour', 'sugar', 'salt', 'oil', 'vinegar', 'spice'].some(term => lowerItem.includes(term))) {
+      if (['flour', 'sugar', 'salt', 'oil', 'vinegar', 'spice', 'pepper', 'herbs', 'baking', 'pasta', 'rice', 'beans', 'lentils'].some(term => lowerItem.includes(term))) {
         category = 'Pantry';
-      } else if (['milk', 'cheese', 'yogurt', 'butter', 'cream'].some(term => lowerItem.includes(term))) {
+      } else if (['milk', 'cheese', 'yogurt', 'butter', 'cream', 'eggs', 'dairy'].some(term => lowerItem.includes(term))) {
         category = 'Dairy';
-      } else if (['apple', 'banana', 'orange', 'berry', 'fruit'].some(term => lowerItem.includes(term))) {
+      } else if (['apple', 'banana', 'orange', 'berry', 'fruit', 'lemon', 'lime', 'grape', 'strawberry', 'blueberry'].some(term => lowerItem.includes(term))) {
         category = 'Fruits';
-      } else if (['carrot', 'potato', 'onion', 'garlic', 'vegetable'].some(term => lowerItem.includes(term))) {
+      } else if (['carrot', 'potato', 'onion', 'garlic', 'vegetable', 'tomato', 'lettuce', 'spinach', 'broccoli', 'pepper', 'cucumber'].some(term => lowerItem.includes(term))) {
         category = 'Vegetables';
-      } else if (['chicken', 'beef', 'pork', 'fish', 'meat'].some(term => lowerItem.includes(term))) {
+      } else if (['chicken', 'beef', 'pork', 'fish', 'meat', 'salmon', 'turkey', 'lamb', 'shrimp', 'seafood'].some(term => lowerItem.includes(term))) {
         category = 'Meat & Fish';
       }
       
@@ -133,45 +136,116 @@ const GroceryList: React.FC = () => {
     {}
   );
 
+  // Handle item check/uncheck
+  const handleItemCheck = (itemKey: string) => {
+    const newCheckedItems = new Set(checkedItems);
+    if (newCheckedItems.has(itemKey)) {
+      newCheckedItems.delete(itemKey);
+    } else {
+      newCheckedItems.add(itemKey);
+    }
+    setCheckedItems(newCheckedItems);
+  };
+
+  // Handle category collapse/expand
+  const handleCategoryToggle = (category: string) => {
+    const newCollapsedCategories = new Set(collapsedCategories);
+    if (newCollapsedCategories.has(category)) {
+      newCollapsedCategories.delete(category);
+    } else {
+      newCollapsedCategories.add(category);
+    }
+    setCollapsedCategories(newCollapsedCategories);
+  };
+
+  // Get category icon
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'Pantry': return '🏺';
+      case 'Dairy': return '🥛';
+      case 'Fruits': return '🍎';
+      case 'Vegetables': return '🥕';
+      case 'Meat & Fish': return '🥩';
+      default: return '📦';
+    }
+  };
+
+  // Get category icon class
+  const getCategoryIconClass = (category: string) => {
+    switch (category) {
+      case 'Pantry': return 'pantry-icon';
+      case 'Dairy': return 'dairy-icon';
+      case 'Fruits': return 'fruits-icon';
+      case 'Vegetables': return 'vegetables-icon';
+      case 'Meat & Fish': return 'meat-icon';
+      default: return 'other-icon';
+    }
+  };
+
   if (loading) {
-    return <div className="loading">Generating your grocery list...</div>;
+    return (
+      <div className="grocery-list-container">
+        <div className="loading-modern">
+          <div className="loading-spinner"></div>
+          <div className="loading-text">Generating your grocery list...</div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="grocery-list-container">
-      <h1>Grocery List</h1>
-      {error && <div className="error-message">{error}</div>}
+      {/* Header */}
+      <div className="grocery-list-header">
+        <h1 className="grocery-list-title">
+          <span className="grocery-list-icon">🛒</span>
+          Grocery List
+        </h1>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="error-message-modern">
+          <span className="error-icon">⚠️</span>
+          {error}
+        </div>
+      )}
       
-      <div className="grocery-controls">
-        <div className="menu-selector">
-          <h3>Select a Menu</h3>
-          <div className="filter-controls modern-filter" style={{ marginBottom: '20px' }}>
-            <div className="custom-dropdown" tabIndex={0} onBlur={() => setDropdownOpen(false)}>
+      {/* Controls Section */}
+      <div className="grocery-controls-modern">
+        <div className="menu-selector-modern">
+          <h3 className="selector-title">
+            <span className="selector-icon">📋</span>
+            Select a Menu
+          </h3>
+          
+          <div className="filter-controls-modern">
+            <div className="custom-dropdown-modern" tabIndex={0} onBlur={() => setDropdownOpen(false)}>
               <button
                 type="button"
-                className="custom-dropdown-btn"
+                className="custom-dropdown-btn-modern"
                 onClick={() => setDropdownOpen((open) => !open)}
               >
                 {selectedMenuId 
                   ? savedMenus.find(menu => menu.id === selectedMenuId)?.name 
-                  : '-- Select a Menu --'}
-                <span className="dropdown-arrow">▼</span>
+                  : 'Choose a menu to generate grocery list'}
+                <span className={`dropdown-arrow-modern ${dropdownOpen ? 'open' : ''}`}>▼</span>
               </button>
               {dropdownOpen && (
-                <ul className="custom-dropdown-list">
+                <ul className="custom-dropdown-list-modern">
                   <li
-                    className={`custom-dropdown-item${selectedMenuId === null ? ' selected' : ''}`}
+                    className={`custom-dropdown-item-modern${selectedMenuId === null ? ' selected' : ''}`}
                     onMouseDown={() => {
                       handleMenuChange(null);
                       setDropdownOpen(false);
                     }}
                   >
-                    -- Select a Menu --
+                    Choose a menu to generate grocery list
                   </li>
                   {savedMenus.map((menu) => (
                     <li
                       key={menu.id}
-                      className={`custom-dropdown-item${selectedMenuId === menu.id ? ' selected' : ''}`}
+                      className={`custom-dropdown-item-modern${selectedMenuId === menu.id ? ' selected' : ''}`}
                       onMouseDown={() => {
                         handleMenuChange(menu.id);
                         setDropdownOpen(false);
@@ -186,28 +260,27 @@ const GroceryList: React.FC = () => {
           </div>
           
           <button
-            className="btn-primary"
+            className="generate-btn-modern"
             onClick={handleGenerateList}
             disabled={loading || !currentMenu}
-            style={{ marginBottom: '20px' }}
           >
+            <span className="generate-btn-icon">✨</span>
             Generate Grocery List
           </button>
           
+          {/* Menu Summary */}
           {currentMenu && (
-            <div className="menu-summary" style={{ 
-              marginBottom: '20px',
-              padding: '15px', 
-              backgroundColor: '#f8f9fa',
-              borderRadius: '5px',
-              border: '1px solid #eee'
-            }}>
-              <h4 style={{ marginTop: 0 }}>Selected Menu: {currentMenu.name}</h4>
-              <p>Contains {currentMenu.days.length} days of meals</p>
+            <div className="menu-summary-modern">
+              <h4 className="menu-summary-title">
+                <span>📋</span>
+                Selected Menu: {currentMenu.name}
+              </h4>
+              <p className="menu-summary-subtitle">
+                Contains {currentMenu.days.length} days of meals
+              </p>
               
-              {/* Show recipe summary with serving counts */}
-              <div className="recipe-summary">
-                <h5 style={{ marginBottom: '8px' }}>Recipes in this menu:</h5>
+              <div className="recipe-summary-modern">
+                <h5 className="recipe-summary-title">Recipes in this menu:</h5>
                 {(() => {
                   // Count recipe occurrences and track recipe IDs
                   const recipeCount: Record<string, number> = {};
@@ -243,15 +316,11 @@ const GroceryList: React.FC = () => {
                   });
                   
                   return (
-                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                    <ul className="recipe-list-modern">
                       {Object.entries(recipeCount).map(([recipe, servings]) => (
-                        <li key={recipe} style={{ marginBottom: '4px' }}>
-                          <span style={{ fontWeight: 500 }}>{recipe}</span>: {servings} servings
-                          {recipeIds[recipe] !== undefined && (
-                            <span style={{ fontSize: '0.8em', color: '#888', marginLeft: '8px' }}>
-                              (ID: {recipeIds[recipe]})
-                            </span>
-                          )}
+                        <li key={recipe} className="recipe-item-modern">
+                          <span className="recipe-name-modern">{recipe}</span>
+                          <span className="recipe-servings">{servings} servings</span>
                         </li>
                       ))}
                     </ul>
@@ -261,76 +330,107 @@ const GroceryList: React.FC = () => {
             </div>
           )}
         </div>
-        
-        {groceryList.length > 0 ? (
-          <div className="grocery-list" style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-            marginTop: '20px'
-          }}>
-            <h2>Your Grocery List</h2>
-            
-            {Object.entries(groupedGroceryItems).map(([category, items]) => (
-              <div key={category} className="grocery-category" style={{ marginBottom: '20px' }}>
-                <h3 style={{ 
-                  borderBottom: '2px solid #f0f0f0', 
-                  paddingBottom: '8px',
-                  marginBottom: '12px', 
-                  color: '#333' 
-                }}>{category}</h3>
-                <ul className="grocery-items" style={{
-                  listStyle: 'none',
-                  padding: 0,
-                  margin: 0
-                }}>
-                  {items.map((item, index) => (
-                    <li key={index} className="grocery-item" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '8px 0',
-                      borderBottom: '1px solid #f0f0f0'
-                    }}>
-                      <span className="grocery-quantity" style={{ fontWeight: 'bold', marginRight: '5px' }}>
-                        {item.quantity}
-                      </span>
-                      <span className="grocery-unit" style={{ color: '#666', width: '60px' }}>
-                        {item.unit}
-                      </span>
-                      <span className="grocery-name" style={{ flex: 1 }}>
-                        {item.item}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+      </div>
 
-            <div style={{ marginTop: '20px', textAlign: 'center' }}>
-              <button onClick={() => window.print()} className="btn-secondary" style={{ marginRight: '10px' }}>
-                Print Grocery List
-              </button>
-            </div>
+      {/* Grocery List Display */}
+      {groceryList.length > 0 ? (
+        <div className="grocery-list-display">
+          <div className="grocery-list-header-section">
+            <h2 className="grocery-list-display-title">
+              <span>🛍️</span>
+              Your Grocery List
+            </h2>
+            <p className="grocery-list-subtitle">
+              {groceryList.length} items • {Object.keys(groupedGroceryItems).length} categories
+            </p>
           </div>
-        ) : (
-          <div className="empty-state" style={{
-            backgroundColor: '#f9f9f9',
-            padding: '30px',
-            borderRadius: '8px',
-            textAlign: 'center',
-            marginTop: '20px'
-          }}>
-            <p>Select a menu and generate a grocery list to see your shopping items.</p>
+          
+          <div className="grocery-categories">
+            {Object.entries(groupedGroceryItems).map(([category, items]) => {
+              const isCollapsed = collapsedCategories.has(category);
+              return (
+                <div key={category} className="grocery-category-modern">
+                  <div 
+                    className="category-header"
+                    onClick={() => handleCategoryToggle(category)}
+                  >
+                    <div className="category-title">
+                      <div className={`category-icon ${getCategoryIconClass(category)}`}>
+                        {getCategoryIcon(category)}
+                      </div>
+                      {category}
+                      <span className="category-count">{items.length}</span>
+                    </div>
+                    <span className={`category-expand-icon ${isCollapsed ? '' : 'expanded'}`}>
+                      ▼
+                    </span>
+                  </div>
+                  
+                  <ul className={`grocery-items-modern ${isCollapsed ? 'collapsed' : ''}`}>
+                    {items.map((item, index) => {
+                      const itemKey = `${category}-${index}-${item.item}`;
+                      const isChecked = checkedItems.has(itemKey);
+                      
+                      return (
+                        <li 
+                          key={index} 
+                          className={`grocery-item-modern ${isChecked ? 'checked' : ''}`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="grocery-checkbox"
+                            checked={isChecked}
+                            onChange={() => handleItemCheck(itemKey)}
+                          />
+                          <div className="grocery-item-content">
+                            <span className="grocery-quantity-modern">
+                              {item.quantity}
+                            </span>
+                            <span className="grocery-unit-modern">
+                              {item.unit}
+                            </span>
+                            <span className="grocery-name-modern">
+                              {item.item}
+                            </span>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
-        )}
-      </div>
-      
-      <div className="grocery-actions">
-        <Link to="/weekly-menu" className="btn-secondary">
-          Back to Weekly Menu
-        </Link>
-      </div>
+
+          <div className="grocery-actions-modern">
+            <button 
+              onClick={() => window.print()} 
+              className="action-btn-modern btn-print"
+            >
+              <span>🖨️</span>
+              Print List
+            </button>
+            <Link to="/weekly-menu" className="action-btn-modern btn-back">
+              <span>←</span>
+              Back to Menu
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className="empty-state-modern">
+          <div className="empty-state-icon">🛒</div>
+          <h3 className="empty-state-title">No Grocery List Yet</h3>
+          <p className="empty-state-description">
+            Select a menu from above and click "Generate Grocery List" to create your shopping list with all the ingredients you need.
+          </p>
+          <div className="empty-state-actions">
+            <Link to="/weekly-menu" className="action-btn-modern btn-back">
+              <span>📋</span>
+              Create a Menu First
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
