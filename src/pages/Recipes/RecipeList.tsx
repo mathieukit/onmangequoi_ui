@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useRecipes } from '../../hooks/useRecipes';
 import './RecipeStyles.css';
@@ -13,6 +13,25 @@ const RecipeList: React.FC = () => {
     { value: 'déjeuner', label: 'Lunch' },
     { value: 'dîner', label: 'Dinner' },
   ];
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (dropdownOpen) {
+      const handleClickOutside = (event: MouseEvent) => {
+        // Check if the clicked element is not part of the dropdown
+        const dropdown = document.querySelector('.custom-dropdown');
+        if (dropdown && !dropdown.contains(event.target as Node)) {
+          setDropdownOpen(false);
+        }
+      };
+      
+      // Add event listener
+      document.addEventListener('mousedown', handleClickOutside);
+      
+      // Clean up the event listener
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [dropdownOpen]);
   
   // Group recipes by meal type
   const recipesByType: Record<string, typeof recipes> = {
@@ -64,7 +83,10 @@ const RecipeList: React.FC = () => {
           <button
             type="button"
             className="custom-dropdown-btn"
-            onClick={() => setDropdownOpen((open) => !open)}
+            onClick={() => {
+              // Simply toggle dropdown state
+              setDropdownOpen((open) => !open);
+            }}
           >
             {mealTypes.find(t => t.value === filterType)?.label}
             <span className={`dropdown-arrow ${dropdownOpen ? 'open' : ''}`}>▼</span>

@@ -55,6 +55,8 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
+  position: relative;
+  z-index: 100; /* Higher z-index than recipe cards */
 }
 
 .filter-label {
@@ -73,6 +75,7 @@
 .custom-dropdown {
   position: relative;
   min-width: 250px;
+  z-index: 100; /* Add z-index to create a stacking context */
 }
 
 .custom-dropdown-btn {
@@ -125,7 +128,7 @@
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  z-index: 9999; /* Very high z-index */
   margin: 0;
   padding: 0.5rem 0;
   list-style: none;
@@ -133,6 +136,7 @@
   backdrop-filter: blur(20px);
   max-height: 300px;
   overflow-y: auto;
+  will-change: transform; /* Hint to the browser to create a new stacking context */
 }
 
 .custom-dropdown-item {
@@ -201,6 +205,8 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-top: 2rem;
+  position: relative;
+  z-index: 1; /* Lower z-index than the dropdown */
 }
 
 .recipe-card {
@@ -214,6 +220,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  position: relative;
+  z-index: 1; /* Lower z-index than the dropdown */
 }
 
 .recipe-card:hover {
