@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ScrollReveal, { initScrollReveal } from '../components/ScrollReveal';
 import './Home.css'; // Import our new CSS file
 
 // Icons for features and steps
@@ -41,12 +42,23 @@ const ListIcon = () => (
   </svg>
 );
 
+// Avatar images for testimonials
+const avatars = {
+  sophie: "https://randomuser.me/api/portraits/women/32.jpg",
+  marco: "https://randomuser.me/api/portraits/men/45.jpg",
+  amelia: "https://randomuser.me/api/portraits/women/65.jpg"
+};
+
 const Home: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   
   // Animation effect on scroll
   useEffect(() => {
+    // Initialize the scroll reveal system
+    initScrollReveal();
+    
+    // Legacy animation effect for existing components
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -100,124 +112,147 @@ const Home: React.FC = () => {
       </div>
       
       {/* Enhanced Features Section */}
-      <div className="features">
-        <div className="feature-card animate-delay-1">
-          <div className="feature-icon">
-            <RecipeIcon />
+      <ScrollReveal>
+        <div className="features">
+          <div className="feature-card">
+            <div className="feature-icon">
+              <RecipeIcon />
+            </div>
+            <h3>Store Your Recipes</h3>
+            <p>Keep all your favorite recipes in one place, organized by meal type. Add detailed ingredients, instructions, and categorize by breakfast, lunch, or dinner.</p>
           </div>
-          <h3>Store Your Recipes</h3>
-          <p>Keep all your favorite recipes in one place, organized by meal type. Add detailed ingredients, instructions, and categorize by breakfast, lunch, or dinner.</p>
-        </div>
-        
-        <div className="feature-card animate-delay-2">
-          <div className="feature-icon">
-            <MenuIcon />
+          
+          <div className="feature-card">
+            <div className="feature-icon">
+              <MenuIcon />
+            </div>
+            <h3>Generate Weekly Menus</h3>
+            <p>Plan your meals for the entire week with just one click. Customize serving sizes, swap recipes, and create the perfect balanced menu for your household.</p>
           </div>
-          <h3>Generate Weekly Menus</h3>
-          <p>Plan your meals for the entire week with just one click. Customize serving sizes, swap recipes, and create the perfect balanced menu for your household.</p>
-        </div>
-        
-        <div className="feature-card animate-delay-3">
-          <div className="feature-icon">
-            <GroceryIcon />
+          
+          <div className="feature-card">
+            <div className="feature-icon">
+              <GroceryIcon />
+            </div>
+            <h3>Create Grocery Lists</h3>
+            <p>Automatically generate shopping lists based on your meal plan. Ingredients are sorted by category so you can efficiently navigate the store and never miss an item.</p>
           </div>
-          <h3>Create Grocery Lists</h3>
-          <p>Automatically generate shopping lists based on your meal plan. Ingredients are sorted by category so you can efficiently navigate the store and never miss an item.</p>
         </div>
-      </div>
+      </ScrollReveal>
       
       {/* How It Works Section with Enhanced Steps */}
       <div className="app-description">
         <h2>How It Works</h2>
-        <div className="steps">
-          <div className="step animate-delay-1">
-            <div className="step-number">1</div>
-            <div className="step-icon">
-              <AddIcon />
+        <ScrollReveal>
+          <div className="steps">
+            <div className="step">
+              <div className="step-number">1</div>
+              <div className="step-icon">
+                <AddIcon />
+              </div>
+              <h3>Add Your Recipes</h3>
+              <p>Start by adding your favorite recipes to your collection. Include ingredients, quantities, and instructions to keep everything organized.</p>
             </div>
-            <h3>Add Your Recipes</h3>
-            <p>Start by adding your favorite recipes to your collection. Include ingredients, quantities, and instructions to keep everything organized.</p>
-          </div>
-          
-          <div className="step animate-delay-2">
-            <div className="step-number">2</div>
-            <div className="step-icon">
-              <GenerateIcon />
+            
+            <div className="step">
+              <div className="step-number">2</div>
+              <div className="step-icon">
+                <GenerateIcon />
+              </div>
+              <h3>Generate a Menu</h3>
+              <p>Create a balanced weekly menu with a variety of meals. Select dates, number of people, and let the app suggest combinations or customize your own.</p>
             </div>
-            <h3>Generate a Menu</h3>
-            <p>Create a balanced weekly menu with a variety of meals. Select dates, number of people, and let the app suggest combinations or customize your own.</p>
-          </div>
-          
-          <div className="step animate-delay-3">
-            <div className="step-number">3</div>
-            <div className="step-icon">
-              <ListIcon />
+            
+            <div className="step">
+              <div className="step-number">3</div>
+              <div className="step-icon">
+                <ListIcon />
+              </div>
+              <h3>Get Your Grocery List</h3>
+              <p>Generate a consolidated shopping list for all your planned meals. Print it, check items off as you shop, and never forget an ingredient again.</p>
             </div>
-            <h3>Get Your Grocery List</h3>
-            <p>Generate a consolidated shopping list for all your planned meals. Print it, check items off as you shop, and never forget an ingredient again.</p>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
       
-      {/* Testimonials Section */}
+      {/* Enhanced Testimonials Section */}
       <div className="testimonials-section">
         <h2>What Our Users Say</h2>
-        <div className="testimonials-grid">
-          <div className="testimonial-card animate-delay-1">
-            <div className="testimonial-content">
-              <p>This app has completely transformed how I plan meals for my family. I save so much time and we eat much better now!</p>
+        <ScrollReveal>
+          <div className="testimonials-grid">
+            <div className="testimonial-card">
+              <div className="testimonial-header">
+                <img src={avatars.sophie} alt="Sophie L." className="testimonial-avatar" />
+                <div>
+                  <div className="testimonial-author">Sophie L.</div>
+                </div>
+              </div>
+              <div className="testimonial-content">
+                <p>This app has completely transformed how I plan meals for my family. I save so much time and we eat much better now!</p>
+              </div>
             </div>
-            <div className="testimonial-author">Sophie L.</div>
-          </div>
-          
-          <div className="testimonial-card animate-delay-2">
-            <div className="testimonial-content">
-              <p>The grocery list feature alone has saved me countless trips to the store. Everything is so well organized!</p>
+            
+            <div className="testimonial-card">
+              <div className="testimonial-header">
+                <img src={avatars.marco} alt="Marco T." className="testimonial-avatar" />
+                <div>
+                  <div className="testimonial-author">Marco T.</div>
+                </div>
+              </div>
+              <div className="testimonial-content">
+                <p>The grocery list feature alone has saved me countless trips to the store. Everything is so well organized!</p>
+              </div>
             </div>
-            <div className="testimonial-author">Marco T.</div>
-          </div>
-          
-          <div className="testimonial-card animate-delay-3">
-            <div className="testimonial-content">
-              <p>I've tried many meal planning apps and this is by far the most intuitive and helpful one I've found.</p>
+            
+            <div className="testimonial-card">
+              <div className="testimonial-header">
+                <img src={avatars.amelia} alt="Amelia R." className="testimonial-avatar" />
+                <div>
+                  <div className="testimonial-author">Amelia R.</div>
+                </div>
+              </div>
+              <div className="testimonial-content">
+                <p>I've tried many meal planning apps and this is by far the most intuitive and helpful one I've found.</p>
+              </div>
             </div>
-            <div className="testimonial-author">Amelia R.</div>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
       
-      {/* FAQ Section */}
+      {/* Improved FAQ Section */}
       <div className="faq-section">
         <h2>Frequently Asked Questions</h2>
-        <div className="faq-list">
-          <div className={`faq-item ${activeIndex === 0 ? 'active' : ''}`} onClick={() => toggleFaq(0)}>
-            <div className="faq-question">How many recipes can I store?</div>
-            <div className="faq-answer">
-              <p>You can store an unlimited number of recipes in your collection. The more recipes you have, the more variety our menu generator can provide.</p>
+        <ScrollReveal>
+          <div className="faq-list">
+            <div className={`faq-item ${activeIndex === 0 ? 'active' : ''}`} onClick={() => toggleFaq(0)}>
+              <div className="faq-question">How many recipes can I store?</div>
+              <div className="faq-answer">
+                <p>You can store an unlimited number of recipes in your collection. The more recipes you have, the more variety our menu generator can provide.</p>
+              </div>
+            </div>
+            
+            <div className={`faq-item ${activeIndex === 1 ? 'active' : ''}`} onClick={() => toggleFaq(1)}>
+              <div className="faq-question">Can I share my recipes with others?</div>
+              <div className="faq-answer">
+                <p>Currently, recipes are private to your account. We're working on adding sharing functionality in a future update.</p>
+              </div>
+            </div>
+            
+            <div className={`faq-item ${activeIndex === 2 ? 'active' : ''}`} onClick={() => toggleFaq(2)}>
+              <div className="faq-question">How does the menu generator work?</div>
+              <div className="faq-answer">
+                <p>Our algorithm creates balanced menus based on your recipe collection, ensuring variety across meal types and avoiding repetition. You can always make adjustments to the suggestions.</p>
+              </div>
+            </div>
+            
+            <div className={`faq-item ${activeIndex === 3 ? 'active' : ''}`} onClick={() => toggleFaq(3)}>
+              <div className="faq-question">Is there a mobile app available?</div>
+              <div className="faq-answer">
+                <p>We're currently developing mobile apps for iOS and Android. For now, our responsive web app works great on mobile browsers.</p>
+              </div>
             </div>
           </div>
-          
-          <div className={`faq-item ${activeIndex === 1 ? 'active' : ''}`} onClick={() => toggleFaq(1)}>
-            <div className="faq-question">Can I share my recipes with others?</div>
-            <div className="faq-answer">
-              <p>Currently, recipes are private to your account. We're working on adding sharing functionality in a future update.</p>
-            </div>
-          </div>
-          
-          <div className={`faq-item ${activeIndex === 2 ? 'active' : ''}`} onClick={() => toggleFaq(2)}>
-            <div className="faq-question">How does the menu generator work?</div>
-            <div className="faq-answer">
-              <p>Our algorithm creates balanced menus based on your recipe collection, ensuring variety across meal types and avoiding repetition. You can always make adjustments to the suggestions.</p>
-            </div>
-          </div>
-          
-          <div className={`faq-item ${activeIndex === 3 ? 'active' : ''}`} onClick={() => toggleFaq(3)}>
-            <div className="faq-question">Is there a mobile app available?</div>
-            <div className="faq-answer">
-              <p>We're currently developing mobile apps for iOS and Android. For now, our responsive web app works great on mobile browsers.</p>
-            </div>
-          </div>
-        </div>
+        </ScrollReveal>
       </div>
     </div>
   );
