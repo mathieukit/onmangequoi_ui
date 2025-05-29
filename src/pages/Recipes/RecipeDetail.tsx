@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useRecipes } from '../../hooks/useRecipes';
 import type { Recipe } from '../../types';
+import './RecipeStyles.css';
 
 const RecipeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,15 +34,24 @@ const RecipeDetail: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="loading">Loading recipe...</div>;
+    return (
+      <div className="loading-modern">
+        <div className="loading-spinner"></div>
+        <div className="loading-text">Loading recipe...</div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="error-message">{error}</div>;
+    return <div className="error-message"><i className="error-icon">⚠️</i> {error}</div>;
   }
 
   if (!recipe) {
-    return <div className="loading">Recipe not found</div>;
+    return (
+      <div className="loading-modern">
+        <div className="loading-text">Recipe not found</div>
+      </div>
+    );
   }
 
   return (
@@ -52,8 +62,19 @@ const RecipeDetail: React.FC = () => {
       </div>
 
       <div className="recipe-detail-content">
+        <div className="recipe-summary">
+          <div className="recipe-info-box">
+            <i className="recipe-info-icon large">🍽️</i>
+            <div className="recipe-info-label">{recipe.mealType}</div>
+          </div>
+          <div className="recipe-info-box">
+            <i className="recipe-info-icon large">📋</i>
+            <div className="recipe-info-label">{recipe.ingredients.length} Ingredients</div>
+          </div>
+        </div>
+        
         <div className="recipe-ingredients">
-          <h2>Ingredients</h2>
+          <h2><i className="recipe-info-icon">📋</i> Ingredients</h2>
           <ul className="ingredients-list">
             {recipe.ingredients.map((ingredient, index) => (
               <li key={index} className="ingredient-item">
@@ -68,13 +89,13 @@ const RecipeDetail: React.FC = () => {
 
       <div className="recipe-actions">
         <Link to="/recipes" className="btn-secondary">
-          Back to Recipes
+          <i>⬅️</i> Back to Recipes
         </Link>
         <button 
           onClick={handleRemoveRecipe}
           className="btn-danger"
         >
-          Remove Recipe
+          <i>🗑️</i> Remove Recipe
         </button>
       </div>
     </div>

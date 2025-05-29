@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecipes } from '../../hooks/useRecipes';
 import type { Ingredient } from '../../types';
+import './RecipeStyles.css';
 
 const AddRecipe: React.FC = () => {
   const navigate = useNavigate();
@@ -101,6 +102,7 @@ const AddRecipe: React.FC = () => {
       
       {(formError || error) && (
         <div className="error-message">
+          <i className="error-icon">⚠️</i>
           {formError || error}
         </div>
       )}
@@ -114,6 +116,7 @@ const AddRecipe: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            placeholder="Enter recipe name"
           />
         </div>
         
@@ -128,7 +131,7 @@ const AddRecipe: React.FC = () => {
               aria-expanded={mealTypeDropdownOpen}
             >
               {mealTypes.find(t => t.value === mealType)?.label}
-              <span className="dropdown-arrow">▼</span>
+              <span className={`dropdown-arrow ${mealTypeDropdownOpen ? 'open' : ''}`}>▼</span>
             </button>
             {mealTypeDropdownOpen && (
               <ul className="custom-dropdown-list" role="listbox">
@@ -149,7 +152,7 @@ const AddRecipe: React.FC = () => {
         </div>
         
         <div className="ingredients-section">
-          <h3>Ingredients</h3>
+          <h3><i className="recipe-info-icon">📋</i> Ingredients</h3>
           
           {ingredients.map((ingredient, index) => (
             <div key={index} className="ingredient-row">
@@ -162,6 +165,7 @@ const AddRecipe: React.FC = () => {
                     value={ingredient.item}
                     onChange={(e) => handleIngredientChange(index, 'item', e.target.value)}
                     required
+                    placeholder="Ingredient name"
                   />
                 </div>
                 
@@ -175,6 +179,7 @@ const AddRecipe: React.FC = () => {
                     step="0.01"
                     min="0"
                     required
+                    placeholder="0"
                   />
                 </div>
                 
@@ -194,10 +199,11 @@ const AddRecipe: React.FC = () => {
               {ingredients.length > 1 && (
                 <button
                   type="button"
-                  className="btn-danger btn-small"
+                  className="btn-remove-recipe"
                   onClick={() => handleRemoveIngredient(index)}
+                  aria-label="Remove ingredient"
                 >
-                  Remove
+                  <i>🗑️</i>
                 </button>
               )}
             </div>
@@ -208,7 +214,7 @@ const AddRecipe: React.FC = () => {
             className="btn-secondary"
             onClick={handleAddIngredient}
           >
-            Add Ingredient
+            <i>➕</i> Add Ingredient
           </button>
         </div>
         
@@ -218,14 +224,14 @@ const AddRecipe: React.FC = () => {
             className="btn-secondary"
             onClick={() => navigate('/recipes')}
           >
-            Cancel
+            <i>✖️</i> Cancel
           </button>
           <button
             type="submit"
             className="btn-primary"
             disabled={loading}
           >
-            {loading ? 'Saving...' : 'Save Recipe'}
+            <i>💾</i> {loading ? 'Saving...' : 'Save Recipe'}
           </button>
         </div>
       </form>
