@@ -764,6 +764,45 @@
   }
 }
 
+/* To Taste Button and Quantity Input */
+.to-taste-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-to-taste {
+  background: #f3f3f3;
+  color: #333;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  outline: none;
+  font-size: 0.98em;
+  display: flex;
+  align-items: center;
+}
+
+.btn-to-taste.active,
+.btn-to-taste[aria-pressed="true"] {
+  background: #f5e6c5;
+  color: #b8860b;
+  border-color: #e6cfa7;
+}
+
+.input-disabled {
+  background: #f8f8f8;
+  color: #aaa;
+  border-color: #e0e0e0;
+}
+
+.to-taste-group label {
+  margin-bottom: 4px;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .recipe-list-container,

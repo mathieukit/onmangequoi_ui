@@ -44,10 +44,19 @@ const AddRecipe: React.FC = () => {
 
   const handleIngredientChange = (index: number, field: keyof Ingredient, value: string | number) => {
     const newIngredients = [...ingredients];
-    newIngredients[index] = {
-      ...newIngredients[index],
-      [field]: field === 'quantity' ? parseFloat(value as string) || 0 : value,
-    };
+    if (field === 'quantity') {
+      // If input is empty, treat as 0 for state, but allow UI to show empty
+      newIngredients[index][field] = value === '' ? 0 : parseFloat(value as string) || 0;
+    } else {
+      newIngredients[index][field] = value as string;
+    }
+    setIngredients(newIngredients);
+  };
+
+  const handleSetToTaste = (index: number) => {
+    const newIngredients = [...ingredients];
+    newIngredients[index].quantity = 0;
+    newIngredients[index].unit = 'to taste';
     setIngredients(newIngredients);
   };
 
@@ -67,12 +76,13 @@ const AddRecipe: React.FC = () => {
         setFormError('All ingredients must have a name');
         return false;
       }
-      if (ingredient.quantity <= 0) {
-        setFormError('All ingredients must have a positive quantity');
+      // Allow quantity 0 only if unit is 'to taste' or 'to serve'
+      if (ingredient.quantity <= 0 && !['to taste', 'to serve'].includes((ingredient.unit || '').toLowerCase())) {
+        setFormError('All ingredients must have a positive quantity or be marked as "to taste"/"to serve"');
         return false;
       }
       if (!ingredient.unit.trim()) {
-        setFormError('All ingredients must have a unit');
+        setFormError('All ingredients must have a unit (or use "to taste")');
         return false;
       }
     }
@@ -219,18 +229,40 @@ const AddRecipe: React.FC = () => {
                   />
                 </div>
                 
-                <div className="form-group">
+                <div className="form-group to-taste-group">
                   <label htmlFor={`quantity-${index}`}>Quantity</label>
-                  <input
-                    type="number"
-                    id={`quantity-${index}`}
-                    value={ingredient.quantity || ''}
-                    onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
-                    step="0.01"
-                    min="0"
-                    required
-                    placeholder="0"
-                  />
+                  <div className="to-taste-row">
+                    <input
+                      type="number"
+                      id={`quantity-${index}`}
+                      value={ingredient.unit === 'to taste' || ingredient.unit === 'to serve' ? '' : ingredient.quantity || ''}
+                      onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
+                      step="0.01"
+                      min="0"
+                      placeholder="0"
+                      disabled={ingredient.unit === 'to taste' || ingredient.unit === 'to serve'}
+                      className={ingredient.unit === 'to taste' || ingredient.unit === 'to serve' ? 'input-disabled' : ''}
+                      style={{ width: 80, marginRight: 8 }}
+                    />
+                    <button
+                      type="button"
+                      className={`btn-to-taste${ingredient.unit === 'to taste' ? ' active' : ''}`}
+                      onClick={() => handleSetToTaste(index)}
+                      aria-pressed={ingredient.unit === 'to taste'}
+                      style={{
+                        background: ingredient.unit === 'to taste' ? '#f5e6c5' : '#f3f3f3',
+                        color: ingredient.unit === 'to taste' ? '#b8860b' : '#333',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: 6,
+                        padding: '4px 10px',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        transition: 'background 0.2s',
+                      }}
+                    >
+                      <span role="img" aria-label="to taste" style={{ marginRight: 4 }}>🧂</span>To taste
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="form-group">
