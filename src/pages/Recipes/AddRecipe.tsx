@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecipes } from '../../hooks/useRecipes';
+import { recipeService } from '../../services/api';
 import type { Ingredient } from '../../types';
 import './RecipeStyles.css';
 
@@ -15,6 +16,9 @@ const AddRecipe: React.FC = () => {
     { item: '', quantity: 0, unit: '' }
   ]);
   const [formError, setFormError] = useState<string | null>(null);
+  const [importUrl, setImportUrl] = useState('');
+  const [importLoading, setImportLoading] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const mealTypes = [
     { value: 'petit déjeuner', label: 'Breakfast' },
@@ -96,9 +100,55 @@ const AddRecipe: React.FC = () => {
     }
   };
 
+  // Import recipe from URL
+  const handleImportFromUrl = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setImportError(null);
+    setImportLoading(true);
+    try {
+      const { recipe } = await recipeService.parseRecipeUrl(importUrl);
+      setName(recipe.name || '');
+      setMealType(recipe.mealType || 'Lunch');
+      // Map API ingredient fields to UI fields
+      const mappedIngredients = Array.isArray(recipe.ingredients)
+        ? recipe.ingredients.map((ing: any) => ({
+            item: ing.item || ing.name || '',
+            quantity: parseFloat(ing.quantity) || (ing.quantity === 'to taste' || ing.quantity === 'to serve' ? ing.quantity : 0),
+            unit: ing.unit || '',
+          }))
+        : [{ item: '', quantity: 0, unit: '' }];
+      setIngredients(mappedIngredients.length > 0 ? mappedIngredients : [{ item: '', quantity: 0, unit: '' }]);
+    } catch (err: any) {
+      setImportError(err.response?.data?.detail || err.message || 'Failed to import recipe from URL');
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
   return (
     <div className="add-recipe-container">
       <h1>Add New Recipe</h1>
+
+      {/* Import from URL */}
+      <form onSubmit={handleImportFromUrl} className="form-group" style={{ marginBottom: 24 }}>
+        <label htmlFor="import-url">Import from Recipe URL</label>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input
+            type="url"
+            id="import-url"
+            value={importUrl}
+            onChange={e => setImportUrl(e.target.value)}
+            placeholder="Paste recipe URL (e.g. marmiton.org, allrecipes.com...)"
+            style={{ flex: 1 }}
+            disabled={importLoading}
+            required
+          />
+          <button type="submit" className="btn-secondary" disabled={importLoading || !importUrl} style={{ minWidth: 120 }}>
+            {importLoading ? 'Importing...' : 'Import'}
+          </button>
+        </div>
+        {importError && <div className="error-message" style={{ marginTop: 8 }}><i className="error-icon">⚠️</i> {importError}</div>}
+      </form>
       
       {(formError || error) && (
         <div className="error-message">

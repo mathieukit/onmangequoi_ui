@@ -53,6 +53,12 @@ export const recipeService = {
     const response = await api.delete(`/recipes/${recipeName}`);
     return response.data;
   },
+
+  // Parse a recipe from a URL (for import)
+  parseRecipeUrl: async (url: string): Promise<{ message: string; recipe: Recipe }> => {
+    const response = await api.post('/parse-recipe-url', { url });
+    return response.data;
+  },
 };
 
 // Menu and grocery list services
