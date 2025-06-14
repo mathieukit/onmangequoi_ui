@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useRecipes } from '../../hooks/useRecipes';
+import { ConfirmDialog } from '../../components';
 import './RecipeStyles.css';
 
 const RecipeList: React.FC = () => {
   const { recipes, loading, error, removeRecipe } = useRecipes();
   const [filterType, setFilterType] = useState<string>('all');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    recipeName: string;
+  }>({
+    isOpen: false,
+    recipeName: ''
+  });
+  
   const mealTypes = [
     { value: 'all', label: 'All Recipes' },
     { value: 'petit déjeuner', label: 'Breakfast' },
@@ -43,10 +52,22 @@ const RecipeList: React.FC = () => {
 
   const displayedRecipes = recipesByType[filterType] || recipes;
 
-  const handleRemoveRecipe = async (recipeName: string) => {
-    if (window.confirm(`Are you sure you want to remove "${recipeName}"?`)) {
-      await removeRecipe(recipeName);
+  const handleRemoveRecipe = (recipeName: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      recipeName
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (confirmDialog.recipeName) {
+      await removeRecipe(confirmDialog.recipeName);
     }
+    setConfirmDialog({ isOpen: false, recipeName: '' });
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDialog({ isOpen: false, recipeName: '' });
   };
 
   if (loading) {
@@ -152,6 +173,17 @@ const RecipeList: React.FC = () => {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title="Delete Recipe"
+        message={`Are you sure you want to delete "${confirmDialog.recipeName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        variant="danger"
+      />
     </div>
   );
 };
