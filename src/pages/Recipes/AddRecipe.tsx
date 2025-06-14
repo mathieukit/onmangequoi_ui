@@ -149,24 +149,24 @@ const AddRecipe: React.FC = () => {
       <h1>Add New Recipe</h1>
 
       {/* Import from URL */}
-      <form onSubmit={handleImportFromUrl} className="form-group" style={{ marginBottom: 24 }}>
+      <form onSubmit={handleImportFromUrl} className="import-url-section">
         <label htmlFor="import-url">Import from Recipe URL</label>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div className="import-url-container">
           <input
             type="url"
             id="import-url"
+            className="import-url-input"
             value={importUrl}
             onChange={e => setImportUrl(e.target.value)}
             placeholder="Paste recipe URL (e.g. marmiton.org, allrecipes.com...)"
-            style={{ flex: 1 }}
             disabled={importLoading}
             required
           />
-          <button type="submit" className="btn-secondary" disabled={importLoading || !importUrl} style={{ minWidth: 120 }}>
+          <button type="submit" className="btn-import" disabled={importLoading || !importUrl}>
             {importLoading ? 'Importing...' : 'Import'}
           </button>
         </div>
-        {importError && <div className="error-message" style={{ marginTop: 8 }}><i className="error-icon">⚠️</i> {importError}</div>}
+        {importError && <div className="error-message"><i className="error-icon">⚠️</i> {importError}</div>}
       </form>
       
       {(formError || error) && (
@@ -226,88 +226,78 @@ const AddRecipe: React.FC = () => {
           {ingredients.map((ingredient, index) => (
             <div key={index} className="ingredient-row">
               <div className="ingredient-fields">
-                <div className="form-group">
-                  <label htmlFor={`item-${index}`}>Item</label>
+                <div className="form-group ingredient-name-group">
+                  <label htmlFor={`item-${index}`}>Ingredient</label>
                   <input
                     type="text"
                     id={`item-${index}`}
                     value={ingredient.item}
                     onChange={(e) => handleIngredientChange(index, 'item', e.target.value)}
                     required
-                    placeholder="Ingredient name"
+                    placeholder="e.g., tomatoes, salt, olive oil"
                   />
                 </div>
                 
-                <div className="form-group to-taste-group">
-                  <label htmlFor={`quantity-${index}`}>
-                    Quantity
-                    {ingredient.unit === 'to taste' && (
-                      <span className="quantity-helper">
-                        • No specific amount needed
+                {ingredient.unit === 'to taste' ? (
+                  <div className="form-group to-taste-display">
+                    <label>Amount</label>
+                    <div className="to-taste-indicator">
+                      <span className="to-taste-badge">
+                        <span className="unit-icon">🧂</span>
+                        <span className="unit-text">To taste</span>
                       </span>
-                    )}
-                  </label>
-                  <div className="quantity-controls">
-                    <div className="quantity-input-wrapper">
+                      <button
+                        type="button"
+                        className="btn-switch-mode"
+                        onClick={() => handleClearSpecialUnit(index)}
+                        title="Switch to specific amount"
+                      >
+                        Switch to amount
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="form-group quantity-unit-group">
+                    <label>Amount & Unit</label>
+                    <div className="quantity-unit-container">
                       <input
                         type="number"
-                        id={`quantity-${index}`}
-                        value={ingredient.unit === 'to taste' ? '' : ingredient.quantity || ''}
+                        value={ingredient.quantity || ''}
                         onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
                         step="0.01"
                         min="0"
                         placeholder="0"
-                        disabled={ingredient.unit === 'to taste'}
-                        className={ingredient.unit === 'to taste' ? 'input-disabled' : ''}
+                        className="quantity-input"
                       />
-                      {ingredient.unit === 'to taste' && (
-                        <button
-                          type="button"
-                          className="btn-clear-special"
-                          onClick={() => handleClearSpecialUnit(index)}
-                          aria-label="Clear special unit"
-                          title="Clear and enter quantity"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                    <div className="special-unit-buttons">
+                      <input
+                        type="text"
+                        value={ingredient.unit}
+                        onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
+                        placeholder="g, ml, cup, piece"
+                        className="unit-input"
+                        required
+                      />
                       <button
                         type="button"
-                        className={`btn-special-unit${ingredient.unit === 'to taste' ? ' active' : ''}`}
+                        className="btn-to-taste"
                         onClick={() => handleSetToTaste(index)}
-                        aria-pressed={ingredient.unit === 'to taste'}
-                        title="Use when exact amount depends on personal preference"
+                        title="Switch to 'to taste'"
                       >
-                        <span className="unit-icon" role="img" aria-label="to taste">🧂</span>
-                        <span className="unit-text">To taste</span>
+                        🧂
                       </button>
                     </div>
                   </div>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor={`unit-${index}`}>Unit</label>
-                  <input
-                    type="text"
-                    id={`unit-${index}`}
-                    value={ingredient.unit}
-                    onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
-                    placeholder="g, ml, piece, etc."
-                    required
-                  />
-                </div>
+                )}
               </div>
               
               {ingredients.length > 1 && (
                 <button
                   type="button"
-                  className="btn-remove-recipe"
+                  className="btn-remove-ingredient"
                   onClick={() => handleRemoveIngredient(index)}
                   aria-label="Remove ingredient"
                 >
-                  <i>🗑️</i>
+                  ✕
                 </button>
               )}
             </div>
