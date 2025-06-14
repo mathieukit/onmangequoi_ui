@@ -145,7 +145,7 @@ const AddRecipe: React.FC = () => {
   };
 
   return (
-    <div className="add-recipe-container">
+    <div>
       {/* Header Section */}
       <div className="add-recipe-header">
         <div className="header-content">
@@ -240,7 +240,7 @@ const AddRecipe: React.FC = () => {
           <p className="section-description">Fill in the basic information about your recipe</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="recipe-form">
+        <form onSubmit={handleSubmit}>
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="name" className="form-label">
