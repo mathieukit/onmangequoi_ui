@@ -78,9 +78,21 @@ const RecipeDetail: React.FC = () => {
           <ul className="ingredients-list">
             {recipe.ingredients.map((ingredient, index) => (
               <li key={index} className="ingredient-item">
-                <span className="ingredient-quantity">{ingredient.quantity}</span>
-                <span className="ingredient-unit">{ingredient.unit}</span>
-                <span className="ingredient-name">{ingredient.item}</span>
+                {ingredient.unit === 'to taste' ? (
+                  <>
+                    <span className="ingredient-special-unit">
+                      <span className="unit-icon">🧂</span>
+                      <span className="unit-text">to taste</span>
+                    </span>
+                    <span className="ingredient-name">{ingredient.item}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="ingredient-quantity">{ingredient.quantity || '—'}</span>
+                    <span className="ingredient-unit">{ingredient.unit}</span>
+                    <span className="ingredient-name">{ingredient.item}</span>
+                  </>
+                )}
               </li>
             ))}
           </ul>

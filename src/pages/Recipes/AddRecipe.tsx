@@ -60,6 +60,15 @@ const AddRecipe: React.FC = () => {
     setIngredients(newIngredients);
   };
 
+  const handleClearSpecialUnit = (index: number) => {
+    const newIngredients = [...ingredients];
+    if (newIngredients[index].unit === 'to taste') {
+      newIngredients[index].unit = '';
+      newIngredients[index].quantity = 1; // Set a default quantity
+    }
+    setIngredients(newIngredients);
+  };
+
   const validateForm = () => {
     if (!name.trim()) {
       setFormError('Recipe name is required');
@@ -76,9 +85,9 @@ const AddRecipe: React.FC = () => {
         setFormError('All ingredients must have a name');
         return false;
       }
-      // Allow quantity 0 only if unit is 'to taste' or 'to serve'
-      if (ingredient.quantity <= 0 && !['to taste', 'to serve'].includes((ingredient.unit || '').toLowerCase())) {
-        setFormError('All ingredients must have a positive quantity or be marked as "to taste"/"to serve"');
+      // Allow quantity 0 only if unit is 'to taste'
+      if (ingredient.quantity <= 0 && !['to taste'].includes((ingredient.unit || '').toLowerCase())) {
+        setFormError('All ingredients must have a positive quantity or be marked as "to taste"');
         return false;
       }
       if (!ingredient.unit.trim()) {
@@ -123,7 +132,7 @@ const AddRecipe: React.FC = () => {
       const mappedIngredients = Array.isArray(recipe.ingredients)
         ? recipe.ingredients.map((ing: any) => ({
             item: ing.item || ing.name || '',
-            quantity: parseFloat(ing.quantity) || (ing.quantity === 'to taste' || ing.quantity === 'to serve' ? ing.quantity : 0),
+            quantity: parseFloat(ing.quantity) || (ing.quantity === 'to taste' ? ing.quantity : 0),
             unit: ing.unit || '',
           }))
         : [{ item: '', quantity: 0, unit: '' }];
@@ -230,38 +239,51 @@ const AddRecipe: React.FC = () => {
                 </div>
                 
                 <div className="form-group to-taste-group">
-                  <label htmlFor={`quantity-${index}`}>Quantity</label>
-                  <div className="to-taste-row">
-                    <input
-                      type="number"
-                      id={`quantity-${index}`}
-                      value={ingredient.unit === 'to taste' || ingredient.unit === 'to serve' ? '' : ingredient.quantity || ''}
-                      onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
-                      step="0.01"
-                      min="0"
-                      placeholder="0"
-                      disabled={ingredient.unit === 'to taste' || ingredient.unit === 'to serve'}
-                      className={ingredient.unit === 'to taste' || ingredient.unit === 'to serve' ? 'input-disabled' : ''}
-                      style={{ width: 80, marginRight: 8 }}
-                    />
-                    <button
-                      type="button"
-                      className={`btn-to-taste${ingredient.unit === 'to taste' ? ' active' : ''}`}
-                      onClick={() => handleSetToTaste(index)}
-                      aria-pressed={ingredient.unit === 'to taste'}
-                      style={{
-                        background: ingredient.unit === 'to taste' ? '#f5e6c5' : '#f3f3f3',
-                        color: ingredient.unit === 'to taste' ? '#b8860b' : '#333',
-                        border: '1px solid #e0e0e0',
-                        borderRadius: 6,
-                        padding: '4px 10px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        transition: 'background 0.2s',
-                      }}
-                    >
-                      <span role="img" aria-label="to taste" style={{ marginRight: 4 }}>🧂</span>To taste
-                    </button>
+                  <label htmlFor={`quantity-${index}`}>
+                    Quantity
+                    {ingredient.unit === 'to taste' && (
+                      <span className="quantity-helper">
+                        • No specific amount needed
+                      </span>
+                    )}
+                  </label>
+                  <div className="quantity-controls">
+                    <div className="quantity-input-wrapper">
+                      <input
+                        type="number"
+                        id={`quantity-${index}`}
+                        value={ingredient.unit === 'to taste' ? '' : ingredient.quantity || ''}
+                        onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
+                        step="0.01"
+                        min="0"
+                        placeholder="0"
+                        disabled={ingredient.unit === 'to taste'}
+                        className={ingredient.unit === 'to taste' ? 'input-disabled' : ''}
+                      />
+                      {ingredient.unit === 'to taste' && (
+                        <button
+                          type="button"
+                          className="btn-clear-special"
+                          onClick={() => handleClearSpecialUnit(index)}
+                          aria-label="Clear special unit"
+                          title="Clear and enter quantity"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                    <div className="special-unit-buttons">
+                      <button
+                        type="button"
+                        className={`btn-special-unit${ingredient.unit === 'to taste' ? ' active' : ''}`}
+                        onClick={() => handleSetToTaste(index)}
+                        aria-pressed={ingredient.unit === 'to taste'}
+                        title="Use when exact amount depends on personal preference"
+                      >
+                        <span className="unit-icon" role="img" aria-label="to taste">🧂</span>
+                        <span className="unit-text">To taste</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
                 
